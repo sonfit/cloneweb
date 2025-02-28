@@ -28,9 +28,9 @@ class PublicCreateDangKy extends CreateDangKy
             ->topNavigation(false)
             ->sidebarWidth('0px');
         $currentHour = now()->hour;
-//        if ($currentHour < 17 || $currentHour > 23) {
-//            die('Truy cập chỉ được phép từ 17h đến 23h59.');
-//        }
+        if ($currentHour < 17 || $currentHour > 23) {
+            die('Truy cập chỉ được phép từ 17h đến 23h59.');
+        }
         $this->form->fill();
         $this->name = request()->query('name');
         if ($this->name) {
@@ -42,12 +42,12 @@ class PublicCreateDangKy extends CreateDangKy
                 ->whereDate('created_at', today())
                 ->first();
 
-//            if ($hasRecordToday) {
-//                echo "<pre>";
-//                echo("Đã tồn tại bản ghi vào lúc " . $hasRecordToday->created_at->format('H:i:s d-m-Y') . "\nNếu sai sót, vui lòng liên hệ theo số điện thoại: ...\n");
-//                echo "</pre>";
-//                exit();
-//            }
+            if ($hasRecordToday) {
+                echo "<pre>";
+                echo("Đã tồn tại bản ghi vào lúc " . $hasRecordToday->created_at->format('H:i:s d-m-Y') . "\nNếu sai sót, vui lòng liên hệ theo số điện thoại: ...\n");
+                echo "</pre>";
+                exit();
+            }
         }else{
             die('Vui lòng cung cấp tên người dùng!');
         }
