@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class TongHop extends Model
 {
     protected $fillable = [
+        'name',
         'user_id',
         'type',
         'url',

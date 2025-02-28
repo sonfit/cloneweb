@@ -1,7 +1,7 @@
 <?php
 
-use App\Filament\Resources\TongHopResource\Pages\CreateTongHop;
-use App\Livewire\PublicTongHopForm;
+use App\Filament\Pages\PublicCreateDangKy;
+use App\Filament\Pages\PublicCreateTongHop;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -9,11 +9,11 @@ Route::get('/', function () {
 });
 
 
-Route::get('/post', function () {
-    return redirect()->route('filament.admin.resources.tong-hops.create');
-})->name('post')
-    ->middleware(['web']);
+Route::get('/post', PublicCreateTongHop::class)
+    ->name('post')
+    ->middleware('web');
 
-Route::get('/admin/resources/tong-hops/create', CreateTongHop::class)
-    ->name('filament.admin.resources.tong-hops.create')
-    ->middleware(['web']);
+Route::get('/dk', PublicCreateDangKy::class)
+    ->name('post')
+    ->middleware('web');
+

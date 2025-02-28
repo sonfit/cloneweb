@@ -31,7 +31,7 @@ class TongHopPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('{{ Create }}');
+        return $user->can('create_tong::hop');
     }
 
     /**
@@ -39,7 +39,7 @@ class TongHopPolicy
      */
     public function update(User $user, TongHop $tongHop): bool
     {
-        return $user->can('{{ Update }}');
+        return $user->can('update_tong::hop');
     }
 
     /**

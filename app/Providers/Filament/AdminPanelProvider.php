@@ -76,15 +76,14 @@ class AdminPanelProvider extends PanelProvider
                     ]),
 
                 FilamentGeneralSettingsPlugin::make()
-                    ->canAccess(fn() => auth()->user()->id === 1)
+//                    ->canAccess(fn() => auth()->user()->id === 1)
                     ->setSort(3)
                     ->setIcon('heroicon-o-cog')
                     ->setNavigationGroup('Settings')
                     ->setTitle('General Settings')
                     ->setNavigationLabel('General Settings'),
 
-            ])
-            ;
+            ]);
 
     }
 

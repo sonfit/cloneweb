@@ -86,10 +86,4 @@ return [
 
     'livewire_loading_delay' => 'default',
 
-    'auth' => [
-        'except_routes' => [
-            '/admin/tong-hops/create', // Không cần đăng nhập khi truy cập URL này
-        ],
-    ],
-
 ];

@@ -12,11 +12,14 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Joaopaulolndev\FilamentGeneralSettings\Models\GeneralSetting;
 
+use Livewire\Attributes\Url;
 use OpenAI;
 
 class CreateTongHop extends CreateRecord
 {
     protected static string $resource = TongHopResource::class;
+    #[Url] // Tự động lấy query string ?name= vào biến này
+    public ?string $name = null;
     protected function getFormActions(): array
     {
         return [
@@ -48,6 +51,7 @@ class CreateTongHop extends CreateRecord
             return $this->sendErrorNotification($apiConfig['message']);
         }
 
+
         // Build AI prompt
         $messages = $this->buildAIPrompt($data['url'], $data['raw_text'], $apiConfig['promptContent']);
         try {
@@ -55,8 +59,8 @@ class CreateTongHop extends CreateRecord
             $response = $client->chat()->create([
                 'model' => $apiConfig['model'],
                 'messages' => $messages,
-                'temperature' => $apiConfig['temperature'],
-                'max_tokens' => $apiConfig['max_tokens'],
+                'temperature' => (int)$apiConfig['temperature'],
+                'max_tokens' => (int)$apiConfig['max_tokens'],
             ]);
 
             $summary = $response->choices[0]->message->content ?? 'Không thể tóm tắt nội dung.';
@@ -66,6 +70,7 @@ class CreateTongHop extends CreateRecord
 
 
         $this->form->fill([
+            'name' => $data['name'],
             'url' => $data['url'],
             'raw_text' => $data['raw_text'],
             'summary_text' => $summary,
@@ -129,21 +134,17 @@ class CreateTongHop extends CreateRecord
     }
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Lấy user_id từ người dùng đăng nhập hoặc URL
-        $userId = auth()->id(); // Mặc định từ người dùng đăng nhập
+        $userId = auth()->id();
 
-        // Nếu có query string ?name=aa, ưu tiên lấy từ đó
-        if ($name = request()->query('name')) {
+        $name = $this->name;
+        if ($name) {
             $user = User::where('name', $name)->first();
             $userId = $user?->id;
         }
-
-        // Thêm user_id vào dữ liệu trước khi lưu
         $data['user_id'] = $userId;
         if (isset($data['type']) && is_array($data['type'])) {
             $data['type'] = json_encode($data['type'], JSON_UNESCAPED_UNICODE);
         }
-
         return $data;
     }
     protected function handleRecordCreation(array $data): Model

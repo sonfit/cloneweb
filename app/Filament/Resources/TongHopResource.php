@@ -32,9 +32,16 @@ class TongHopResource extends Resource implements HasShieldPermissions
                         'ttxt' => 'TTXH',
                         'trend' => 'Trend MXH',
                     ])
-                    ->columns(3), // Chia cột hiển thị
+                    ->columns(3)
+                    ->default([]),
+                Forms\Components\TextInput::make('name')
+                    ->placeholder('Nhập tên bài viết')
+                    ->required()
+                    ->columnSpanFull()
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('url')
                     ->placeholder('Nhập URL bài viết')
+                    ->required()
                     ->columnSpanFull()
                     ->maxLength(255),
                 Forms\Components\Textarea::make('raw_text')
@@ -49,7 +56,7 @@ class TongHopResource extends Resource implements HasShieldPermissions
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('url')
+                Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('type')
                     ->formatStateUsing(function ($state) {
@@ -117,8 +124,8 @@ class TongHopResource extends Resource implements HasShieldPermissions
         return [
             'view',
             'view_any',
-//            'create',
-//            'update',
+            'create',
+            'update',
             'delete',
             'delete_any',
         ];
@@ -128,4 +135,12 @@ class TongHopResource extends Resource implements HasShieldPermissions
     {
         return true;
     }
+
+    public static function canViewAny(): bool
+    {
+        return true;
+    }
+
+
+
 }
