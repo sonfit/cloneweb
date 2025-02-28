@@ -50,6 +50,7 @@ class TongHopResource extends Resource implements HasShieldPermissions
                 Forms\Components\Textarea::make('summary_text')
                     ->columnSpanFull(),
             ]);
+
     }
 
     public static function table(Table $table): Table
@@ -140,7 +141,5 @@ class TongHopResource extends Resource implements HasShieldPermissions
     {
         return true;
     }
-
-
 
 }

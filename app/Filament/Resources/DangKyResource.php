@@ -3,16 +3,15 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\DangKyResource\Pages;
-use App\Filament\Resources\DangKyResource\RelationManagers;
 use App\Models\DangKy;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
+use Filament\Actions\CreateAction;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+
 
 class DangKyResource extends Resource implements HasShieldPermissions
 {
@@ -28,32 +27,29 @@ class DangKyResource extends Resource implements HasShieldPermissions
     {
         return $form
             ->schema([
-                Forms\Components\Grid::make(4) // Chia thành 4 cột để giữ bố cục cố định
-                ->schema([
-                    Forms\Components\TextInput::make('oto_muc_3')
-                        ->label('Ô tô Mức 3')
-                        ->required()
-                        ->numeric()
-                        ->columnSpan(2), // Chiếm 2 cột để giữ cân đối
+                Forms\Components\TextInput::make('oto_muc_3')
+                    ->label('Ô tô Mức 3')
+                    ->required()
+                    ->numeric()
+                    ->columnSpan(1), // Chiếm 2 cột để giữ cân đối
 
-                    Forms\Components\TextInput::make('xe_may_muc_3')
-                        ->label('Xe Máy Mức 3')
-                        ->required()
-                        ->numeric()
-                        ->columnSpan(2),
+                Forms\Components\TextInput::make('xe_may_muc_3')
+                    ->label('Xe Máy Mức 3')
+                    ->required()
+                    ->numeric()
+                    ->columnSpan(1),
 
-                    Forms\Components\TextInput::make('oto_muc_4')
-                        ->label('Ô tô Mức 4')
-                        ->required()
-                        ->numeric()
-                        ->columnSpan(2),
+                Forms\Components\TextInput::make('oto_muc_4')
+                    ->label('Ô tô Mức 4')
+                    ->required()
+                    ->numeric()
+                    ->columnSpan(1),
 
-                    Forms\Components\TextInput::make('xe_may_muc_4')
-                        ->label('Xe Máy Mức 4')
-                        ->required()
-                        ->numeric()
-                        ->columnSpan(2),
-                ]),
+                Forms\Components\TextInput::make('xe_may_muc_4')
+                    ->label('Xe Máy Mức 4')
+                    ->required()
+                    ->numeric()
+                    ->columnSpan(1),
             ]);
     }
 

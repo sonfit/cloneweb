@@ -5,12 +5,14 @@ namespace App\Filament\Pages;
 use App\Filament\Resources\DangKyResource;
 use App\Filament\Resources\DangKyResource\Pages\CreateDangKy;
 use App\Models\User;
-use Carbon\Carbon;
-use Filament\Pages\Page;
+use Filament\Notifications\Notification;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Model;
+
 
 class PublicCreateDangKy extends CreateDangKy
 {
+
     protected static string $resource = DangKyResource::class;
     public ?array $data = [];
     public static function getRouteMiddleware(Panel $panel): array
@@ -49,6 +51,22 @@ class PublicCreateDangKy extends CreateDangKy
     public static function canView(): bool
     {
         return true;
+    }
+    protected function handleRecordCreation(array $data): Model
+    {
+        $record = parent::handleRecordCreation($data);
+
+        // Hiển thị thông báo thành công
+        Notification::make()
+            ->title('Thêm mới thành công!')
+            ->success()
+            ->send();
+
+        // Giữ nguyên trang và disable các input
+        $this->form->fill($data)->disabled();
+        $this->halt(); // Ngăn không cho chuyển hướng
+
+        return $record;
     }
 
 }
