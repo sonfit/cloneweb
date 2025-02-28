@@ -21,19 +21,39 @@ class DangKyResource extends Resource implements HasShieldPermissions
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationLabel = 'Báo cáo đăng ký xe';
     protected static ?string $modelLabel = 'Báo cáo đăng ký xe';
+    protected static ?string $slug = 'dang-ky';
+
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('oto_muc_3')
-                    ->required()->numeric(),
-                Forms\Components\TextInput::make('xe_may_muc_3')
-                    ->required()->numeric(),
-                Forms\Components\TextInput::make('oto_muc_4')
-                    ->required()->numeric(),
-                Forms\Components\TextInput::make('xe_may_muc_4')
-                    ->required()->numeric(),
+                Forms\Components\Grid::make(4) // Chia thành 4 cột để giữ bố cục cố định
+                ->schema([
+                    Forms\Components\TextInput::make('oto_muc_3')
+                        ->label('Ô tô Mức 3')
+                        ->required()
+                        ->numeric()
+                        ->columnSpan(2), // Chiếm 2 cột để giữ cân đối
+
+                    Forms\Components\TextInput::make('xe_may_muc_3')
+                        ->label('Xe Máy Mức 3')
+                        ->required()
+                        ->numeric()
+                        ->columnSpan(2),
+
+                    Forms\Components\TextInput::make('oto_muc_4')
+                        ->label('Ô tô Mức 4')
+                        ->required()
+                        ->numeric()
+                        ->columnSpan(2),
+
+                    Forms\Components\TextInput::make('xe_may_muc_4')
+                        ->label('Xe Máy Mức 4')
+                        ->required()
+                        ->numeric()
+                        ->columnSpan(2),
+                ]),
             ]);
     }
 

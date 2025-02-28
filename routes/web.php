@@ -14,6 +14,6 @@ Route::get('/post', PublicCreateTongHop::class)
     ->middleware('web');
 
 Route::get('/dk', PublicCreateDangKy::class)
-    ->name('post')
+    ->name('dang_ky')
     ->middleware('web');
 
