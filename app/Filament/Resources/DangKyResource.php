@@ -5,7 +5,6 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\DangKyResource\Pages;
 use App\Models\DangKy;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
-use Filament\Actions\CreateAction;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -21,7 +20,6 @@ class DangKyResource extends Resource implements HasShieldPermissions
     protected static ?string $navigationLabel = 'Báo cáo đăng ký xe';
     protected static ?string $modelLabel = 'Báo cáo đăng ký xe';
     protected static ?string $slug = 'dang-ky';
-
 
     public static function form(Form $form): Form
     {

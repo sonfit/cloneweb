@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Filament\Resources\DangKyResource;
 use App\Filament\Resources\DangKyResource\Pages\CreateDangKy;
 use App\Models\User;
+use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +23,10 @@ class PublicCreateDangKy extends CreateDangKy
 
     public function mount(): void
     {
+        Filament::getCurrentPanel()->navigation(false)
+            ->breadcrumbs(false)
+            ->topNavigation(false)
+            ->sidebarWidth('0px');
         $currentHour = now()->hour;
 //        if ($currentHour < 17 || $currentHour > 23) {
 //            die('Truy cập chỉ được phép từ 17h đến 23h59.');
@@ -62,11 +67,11 @@ class PublicCreateDangKy extends CreateDangKy
             ->success()
             ->send();
 
-        // Giữ nguyên trang và disable các input
         $this->form->fill($data)->disabled();
-        $this->halt(); // Ngăn không cho chuyển hướng
+        $this->halt();
 
         return $record;
     }
+
 
 }
