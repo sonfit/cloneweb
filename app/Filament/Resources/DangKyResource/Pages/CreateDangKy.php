@@ -35,8 +35,8 @@ class CreateDangKy extends CreateRecord
         if ($name) {
             $user = User::where('name', $name)->first();
             $userId = $user?->id;
-        }
-        $data['ip_user'] = '127.0.0.1';
+        }dd(request()->ip());
+        $data['ip_user'] = request()->ip();
         $data['user_id'] = $userId;
         if (isset($data['type']) && is_array($data['type'])) {
             $data['type'] = json_encode($data['type'], JSON_UNESCAPED_UNICODE);
