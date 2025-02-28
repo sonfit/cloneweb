@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Filament\Pages;
+
+use App\Filament\Resources\TongHopResource;
+use App\Filament\Resources\TongHopResource\Pages\CreateTongHop;
+use Filament\Panel;
+
+class PublicCreateTongHop extends CreateTongHop
+{
+    protected static string $resource = TongHopResource::class;
+    public ?array $data = [];
+    public static function getRouteMiddleware(Panel $panel): array
+    {
+        return ['web'];
+    }
+
+    public function mount(): void
+    {
+        $this->form->fill();
+        $this->name = request()->query('name');
+        abort_unless(static::canView(), 403);
+    }
+
+    public static function canView(): bool
+    {
+        return true;
+    }
+
+}
