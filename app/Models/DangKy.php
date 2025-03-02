@@ -12,7 +12,9 @@ class DangKy extends Model
         'oto_muc_3',
         'xe_may_muc_3',
         'oto_muc_4',
-        'xe_may_muc_4'
+        'xe_may_muc_4',
+        'xe_may_dien_muc_3',
+        'xe_may_dien_muc_4'
     ];
 
     public function user()
