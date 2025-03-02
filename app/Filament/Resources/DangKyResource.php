@@ -7,6 +7,8 @@ use App\Models\DangKy;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -26,56 +28,62 @@ class DangKyResource extends Resource implements HasShieldPermissions
     {
         return $form
             ->schema([
-                Grid::make()
-                    ->columns([
-                        'default' => 3,
-                        'sm' => 3,
-                        'md' => 3,
-                        'lg' => 3,
-                        'xl' => 3,
-                        '2xl' => 3,
-                    ])
+                Section::make('Mức 3')
                     ->schema([
-                        Forms\Components\TextInput::make('oto_muc_3')
-                            ->label('Ô tô Mức 3')
-                            ->required()
-                            ->numeric(),
+                        Grid::make()
+                            ->columns([
+                                'default' => 3,
+                                'sm' => 3,
+                                'md' => 3,
+                                'lg' => 3,
+                                'xl' => 3,
+                                '2xl' => 3,
+                            ])
+                            ->schema([
+                                Forms\Components\TextInput::make('oto_muc_3')
+                                    ->label('Ô tô')
+                                    ->required()
+                                    ->numeric(),
 
-                        Forms\Components\TextInput::make('xe_may_muc_3')
-                            ->label('Xe Máy Mức 3')
-                            ->required()
-                            ->numeric(),
+                                Forms\Components\TextInput::make('xe_may_muc_3')
+                                    ->label('Xe Máy')
+                                    ->required()
+                                    ->numeric(),
 
-                        Forms\Components\TextInput::make('xe_may_dien_muc_3')
-                            ->label('Xe Máy Điện Mức 3')
-                            ->required()
-                            ->numeric(),
+                                Forms\Components\TextInput::make('xe_may_dien_muc_3')
+                                    ->label('Xe Điện')
+                                    ->required()
+                                    ->numeric(),
+                            ]),
                     ]),
 
-                Grid::make()
-                    ->columns([
-                        'default' => 3,
-                        'sm' => 3,
-                        'md' => 3,
-                        'lg' => 3,
-                        'xl' => 3,
-                        '2xl' => 3,
-                    ])
+                Section::make('Mức 4')
                     ->schema([
-                        Forms\Components\TextInput::make('oto_muc_4')
-                            ->label('Ô tô Mức 4')
-                            ->required()
-                            ->numeric(),
+                        Grid::make()
+                            ->columns([
+                                'default' => 3,
+                                'sm' => 3,
+                                'md' => 3,
+                                'lg' => 3,
+                                'xl' => 3,
+                                '2xl' => 3,
+                            ])
+                            ->schema([
+                                Forms\Components\TextInput::make('oto_muc_4')
+                                    ->label('Ô tô')
+                                    ->required()
+                                    ->numeric(),
 
-                        Forms\Components\TextInput::make('xe_may_muc_4')
-                            ->label('Xe Máy Mức 4')
-                            ->required()
-                            ->numeric(),
+                                Forms\Components\TextInput::make('xe_may_muc_4')
+                                    ->label('Xe Máy')
+                                    ->required()
+                                    ->numeric(),
 
-                        Forms\Components\TextInput::make('xe_may_dien_muc_4')
-                            ->label('Xe Máy Điện Mức 4')
-                            ->required()
-                            ->numeric(),
+                                Forms\Components\TextInput::make('xe_may_dien_muc_4')
+                                    ->label('Xe Điện')
+                                    ->required()
+                                    ->numeric(),
+                            ]),
                     ]),
             ]);
     }
