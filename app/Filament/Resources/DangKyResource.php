@@ -230,7 +230,8 @@ class DangKyResource extends Resource implements HasShieldPermissions
             DB::raw('SUM(dang_kies.xe_may_dien_muc_4) as xe_may_dien_muc_4'),
             DB::raw('MIN(dang_kies.created_at) as created_at'),
             DB::raw('MAX(dang_kies.updated_at) as updated_at')
-        ])->groupBy('dang_kies.user_id');
+        ])
+            ->groupBy('dang_kies.user_id', 'users.name_full');
         return $query;
     }
 
