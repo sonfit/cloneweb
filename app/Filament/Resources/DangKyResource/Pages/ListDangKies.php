@@ -5,6 +5,7 @@ namespace App\Filament\Resources\DangKyResource\Pages;
 use App\Filament\Resources\DangKyResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Model;
 
 class ListDangKies extends ListRecords
 {
@@ -16,4 +17,11 @@ class ListDangKies extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    public function getTableRecordKey(Model $record): string
+    {
+        return (string) ($record->user_id ?? uniqid());
+    }
+
+
 }
