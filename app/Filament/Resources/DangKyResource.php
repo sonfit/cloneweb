@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\DangKyResource\Pages;
+use App\Filament\Resources\UserResource\Pages\ViewUser;
 use App\Models\DangKy;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Carbon\Carbon;
@@ -12,17 +13,15 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\ColumnGroup;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
-
-use Filament\Forms\Components\Toggle;
 
 class DangKyResource extends Resource implements HasShieldPermissions
 {
@@ -100,48 +99,8 @@ class DangKyResource extends Resource implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
-        $enableTotal = self::isEnableTotalActive(); // Lấy giá trị của enable_total
-
         return $table
-            ->persistFiltersInSession()
-            ->query(function (Builder $query) use ($enableTotal) {
-                // Truy vấn mặc định
-                $query = \App\Models\DangKy::query()
-                    ->join('users', 'dang_kies.user_id', '=', 'users.id')
-                    ->select([
-                        'dang_kies.id',
-                        'users.name_full as name_full',
-                        'dang_kies.user_id',
-                        'dang_kies.oto_muc_3',
-                        'dang_kies.xe_may_muc_3',
-                        'dang_kies.oto_muc_4',
-                        'dang_kies.xe_may_muc_4',
-                        'dang_kies.xe_may_dien_muc_3',
-                        'dang_kies.xe_may_dien_muc_4',
-                        'dang_kies.created_at',
-                        'dang_kies.updated_at'
-                    ])
-                    ->whereNotNull('dang_kies.user_id');
-
-                // Nếu filter tổng được bật, áp dụng SUM()
-                if ($enableTotal) {
-                    $query->select([
-                        DB::raw('MIN(dang_kies.id) as id'),
-                        'users.name_full as name_full',
-                        'dang_kies.user_id',
-                        DB::raw('SUM(dang_kies.oto_muc_3) as oto_muc_3'),
-                        DB::raw('SUM(dang_kies.xe_may_muc_3) as xe_may_muc_3'),
-                        DB::raw('SUM(dang_kies.oto_muc_4) as oto_muc_4'),
-                        DB::raw('SUM(dang_kies.xe_may_muc_4) as xe_may_muc_4'),
-                        DB::raw('SUM(dang_kies.xe_may_dien_muc_3) as xe_may_dien_muc_3'),
-                        DB::raw('SUM(dang_kies.xe_may_dien_muc_4) as xe_may_dien_muc_4'),
-                        DB::raw('MIN(dang_kies.created_at) as created_at'),
-                        DB::raw('MAX(dang_kies.updated_at) as updated_at')
-                    ])->groupBy('dang_kies.user_id');
-                }
-
-                return $query;
-            })
+            ->query(fn() => self::getDangKyQuery())
             ->defaultSort('created_at', 'asc')
             ->striped()
             ->columns([
@@ -152,20 +111,13 @@ class DangKyResource extends Resource implements HasShieldPermissions
                 self::createTotalGroup(),
                 self::createMucGroup(3),
                 self::createMucGroup(4),
-                TextColumn::make('created_at')
-                    ->date('d-m-Y')
-                    ->sortable()
-                    ->hidden(fn() => !$enableTotal), // Ẩn nếu enableTotal = false
-                TextColumn::make('updated_at')
-                    ->date('d-m-Y')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
-                self::createTotalCheckbox(),
                 self::createDateFilter(),
             ])
             ->actions([
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -175,6 +127,7 @@ class DangKyResource extends Resource implements HasShieldPermissions
             ->paginationPageOptions([20, 50, 500, 1000]);
 
     }
+
     private static function vehicleColumns(): array
     {
         return [
@@ -183,8 +136,9 @@ class DangKyResource extends Resource implements HasShieldPermissions
             'xe_may_dien' => 'Xe Điện',
         ];
     }
+
     // Hàm tạo cột tổng hồ sơ
-    private static function createTotalGroup(): ColumnGroup
+    public static function createTotalGroup(): ColumnGroup
     {
         return ColumnGroup::make('Tổng hồ sơ')
             ->alignCenter()
@@ -205,8 +159,9 @@ class DangKyResource extends Resource implements HasShieldPermissions
                 )
             );
     }
+
     // Hàm tạo nhóm theo mức
-    private static function createMucGroup(int $muc): ColumnGroup
+    public static function createMucGroup(int $muc): ColumnGroup
     {
         return ColumnGroup::make("Mức $muc")
             ->alignCenter()
@@ -220,8 +175,9 @@ class DangKyResource extends Resource implements HasShieldPermissions
                 )
             );
     }
+
     // Bộ lọc ngày
-    private static function createDateFilter(): DateRangeFilter
+    public static function createDateFilter(): DateRangeFilter
     {
         return DateRangeFilter::make('created_at')
             ->label('Chọn khoảng thời gian')
@@ -246,21 +202,36 @@ class DangKyResource extends Resource implements HasShieldPermissions
             });
     }
 
-    // Thêm checkbox filter để bật/tắt chế độ tổng hợp
-    private static function createTotalCheckbox(): Filter
+    private static function getDangKyQuery()
     {
-        return Filter::make('enable_total')
-            ->label('Hiển thị tổng')
-            ->toggle()->default(false);
-    }
-    private static function isEnableTotalActive(): bool
-    {
+        $user = auth()->user(); // Lấy user đang đăng nhập
 
-//        return request()->input('tableFilters.enable_total.isActive', false);
+        $query = \App\Models\DangKy::query()
+            ->join('users', 'dang_kies.user_id', '=', 'users.id');
 
-        $filters = collect(request()->input('components.0.updates', []));
-        $enableTotal = $filters->get('tableFilters.enable_total.isActive', false);
-        return $enableTotal;
+        // Kiểm tra nếu user có tất cả quyền trong resource
+        $allPermissions = ['view', 'view_any', 'create', 'update', 'delete', 'delete_any'];
+        $hasFullAccess = collect($allPermissions)->every(fn($perm) => $user->can($perm));
+        $hasAdminRole = $user->hasRole(['admin', 'super_admin']);
+
+        // Nếu user không có full quyền và không phải admin, chỉ hiển thị dữ liệu của họ
+        if (!$hasFullAccess && !$hasAdminRole) {
+            $query->where('dang_kies.user_id', $user->id);
+        }
+        $query->select([
+            'users.name_full as name_full',
+            'dang_kies.user_id',
+            DB::raw('MIN(dang_kies.user_id) as id'),
+            DB::raw('SUM(dang_kies.oto_muc_3) as oto_muc_3'),
+            DB::raw('SUM(dang_kies.xe_may_muc_3) as xe_may_muc_3'),
+            DB::raw('SUM(dang_kies.oto_muc_4) as oto_muc_4'),
+            DB::raw('SUM(dang_kies.xe_may_muc_4) as xe_may_muc_4'),
+            DB::raw('SUM(dang_kies.xe_may_dien_muc_3) as xe_may_dien_muc_3'),
+            DB::raw('SUM(dang_kies.xe_may_dien_muc_4) as xe_may_dien_muc_4'),
+            DB::raw('MIN(dang_kies.created_at) as created_at'),
+            DB::raw('MAX(dang_kies.updated_at) as updated_at')
+        ])->groupBy('dang_kies.user_id');
+        return $query;
     }
 
 
@@ -276,7 +247,7 @@ class DangKyResource extends Resource implements HasShieldPermissions
         return [
             'index' => Pages\ListDangKies::route('/'),
             'create' => Pages\CreateDangKy::route('/create'),
-            'view' => Pages\ViewDangKy::route('/{record}'),
+            'view' => Pages\ViewUser::route('/{record}/chi-tiet'),
             'edit' => Pages\EditDangKy::route('/{record}/edit'),
         ];
     }
@@ -302,4 +273,11 @@ class DangKyResource extends Resource implements HasShieldPermissions
     {
         return true;
     }
+
+    public static function canView(Model $record): bool
+    {
+        return true;
+//        return auth()->user()->hasPermissionTo('view_dangky') || auth()->user()->id === $record->user_id;
+    }
+
 }

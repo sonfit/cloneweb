@@ -75,7 +75,8 @@ class UserResource extends Resource implements HasShieldPermissions
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable(),
-                Tables\Columns\TextColumn::make('email')->searchable(),
+                Tables\Columns\TextColumn::make('name_full')->searchable(),
+//                Tables\Columns\TextColumn::make('email')->searchable(),
                 Tables\Columns\TextColumn::make('roles.name') // Lấy tên của vai trò từ quan hệ roles
                 ->label('Vai trò')
                     ->badge() // Hiển thị dưới dạng badge

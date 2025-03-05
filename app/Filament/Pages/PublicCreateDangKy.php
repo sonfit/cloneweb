@@ -60,7 +60,7 @@ class PublicCreateDangKy extends CreateDangKy
         }
 
         // Kiểm tra xem người dùng đã đăng ký hôm nay chưa
-        $hasRecordToday = $this->user->dangKys()->whereDate('created_at', today())->first();
+        $hasRecordToday = $this->user->dangkies()->whereDate('created_at', today())->first();
 
         if ($hasRecordToday) {
             abort(403, "Đã tồn tại bản ghi vào lúc {$hasRecordToday->created_at->format('H:i:s d-m-Y')}.\nNếu sai sót, vui lòng liên hệ theo số điện thoại: ...");

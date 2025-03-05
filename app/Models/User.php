@@ -71,7 +71,7 @@ class User extends Authenticatable
         return $this->hasMany(TongHop::class, 'user_id');
     }
 
-    public function dangKys()
+    public function dangkies()
     {
         return $this->hasMany(DangKy::class, 'user_id');
     }
