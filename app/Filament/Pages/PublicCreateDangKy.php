@@ -9,6 +9,7 @@ use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Request;
 
 
@@ -43,12 +44,12 @@ class PublicCreateDangKy extends CreateDangKy
 
         // Kiểm tra nếu 'name' không có trong URL
         if (!$this->name) {
-            abort(400, 'Vui lòng cung cấp tên người dùng!');
+            abort(Response::HTTP_FORBIDDEN, 'Vui lòng cung cấp tên người dùng!');
         }
 
         $currentHour = now()->hour;
         if ($currentHour < 17 || $currentHour > 23) {
-            die('Truy cập chỉ được phép từ 17h đến 23h59.');
+            abort(Response::HTTP_FORBIDDEN, 'Truy cập chỉ được phép từ 17h đến 23h59.');
         }
 
         // Tìm người dùng theo 'name' và lưu vào $this->user
@@ -56,14 +57,14 @@ class PublicCreateDangKy extends CreateDangKy
 
         // Kiểm tra nếu người dùng không tồn tại
         if (!$this->user) {
-            abort(404, 'Người dùng không tồn tại!');
+            abort(Response::HTTP_FORBIDDEN, 'Người dùng không tồn tại!');
         }
 
         // Kiểm tra xem người dùng đã đăng ký hôm nay chưa
         $hasRecordToday = $this->user->dangkies()->whereDate('created_at', today())->first();
 
         if ($hasRecordToday) {
-            abort(403, "Đã tồn tại bản ghi vào lúc {$hasRecordToday->created_at->format('H:i:s d-m-Y')}.\nNếu sai sót, vui lòng liên hệ theo số điện thoại: ...");
+            abort(Response::HTTP_FORBIDDEN, "Đã tồn tại bản ghi vào lúc {$hasRecordToday->created_at->format('H:i:s d-m-Y')}.\nNếu sai sót, vui lòng liên hệ theo số điện thoại: ...");
         }
 
         // Điền dữ liệu vào form nếu không có lỗi
@@ -74,6 +75,7 @@ class PublicCreateDangKy extends CreateDangKy
     {
         return true;
     }
+
     protected function handleRecordCreation(array $data): Model
     {
         $record = parent::handleRecordCreation($data);
