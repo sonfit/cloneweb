@@ -118,7 +118,6 @@ class DangKyResource extends Resource implements HasShieldPermissions
                 self::createDateFilter(),
             ])
             ->actions([
-
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -137,7 +136,6 @@ class DangKyResource extends Resource implements HasShieldPermissions
             'xe_may_dien' => 'Xe Điện',
         ];
     }
-
     // Hàm tạo cột tổng hồ sơ
     public static function createTotalGroup(): ColumnGroup
     {
