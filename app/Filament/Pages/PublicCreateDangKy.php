@@ -46,10 +46,10 @@ class PublicCreateDangKy extends CreateDangKy
             abort(400, 'Vui lòng cung cấp tên người dùng!');
         }
 
-//        $currentHour = now()->hour;
-//        if ($currentHour < 17 || $currentHour > 23) {
-//            die('Truy cập chỉ được phép từ 17h đến 23h59.');
-//        }
+        $currentHour = now()->hour;
+        if ($currentHour < 17 || $currentHour > 23) {
+            die('Truy cập chỉ được phép từ 17h đến 23h59.');
+        }
 
         // Tìm người dùng theo 'name' và lưu vào $this->user
         $this->user = User::where('name', $this->name)->first();
