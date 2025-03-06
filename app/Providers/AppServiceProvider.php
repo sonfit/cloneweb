@@ -22,11 +22,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (!App::environment([
-            'local',
-        ])) {
+//        if (!App::environment([
+//            'local',
+//        ])) {
             URL::forceScheme('https');
-        }
+//        }
         LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
             $switch
                 ->locales(['vi']); // also accepts a closure
