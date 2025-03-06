@@ -51,7 +51,6 @@ class PublicCreateDangKy extends CreateDangKy
         if ($currentHour < 17 || $currentHour > 23) {
             abort(Response::HTTP_FORBIDDEN, 'Truy cập chỉ được phép từ 17h đến 23h59.');
         }
-
         // Tìm người dùng theo 'name' và lưu vào $this->user
         $this->user = User::where('name', $this->name)->first();
 
