@@ -115,7 +115,7 @@ class DangKyResource extends Resource implements HasShieldPermissions
 
             ])
             ->filters([
-                self::createDateFilter(),
+                self::createDateFilter()->defaultYesterday(),
             ])
             ->actions([
             ])
@@ -155,7 +155,8 @@ class DangKyResource extends Resource implements HasShieldPermissions
                             Sum::make()
                                 ->formatStateUsing(fn($state) => "<strong style='color: red;'>" . number_format($state, 0, ',', '.') . "</strong>") // Tổng cũng màu đỏ
                                 ->html()
-                        ),
+                        )
+                    ,
 
                     array_keys(self::vehicleColumns()),
                     self::vehicleColumns()
@@ -177,7 +178,8 @@ class DangKyResource extends Resource implements HasShieldPermissions
                         ->summarize(Sum::make()
                             ->formatStateUsing(fn($state) => "<strong style='color: green;'>" . number_format($state, 0, ',', '.') . "</strong>")
                             ->html()
-                        ), // Format number
+                        )
+                    ,
                     array_keys(self::vehicleColumns()),
                     self::vehicleColumns()
                 )
@@ -189,7 +191,7 @@ class DangKyResource extends Resource implements HasShieldPermissions
     {
         return DateRangeFilter::make('created_at')
             ->label('Chọn khoảng thời gian')
-            ->defaultYesterday()
+
             ->query(function (Builder $query, array $data) {
                 if (empty($data['created_at'])) {
                     return $query;
