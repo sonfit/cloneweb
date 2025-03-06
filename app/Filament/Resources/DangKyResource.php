@@ -125,8 +125,8 @@ class DangKyResource extends Resource implements HasShieldPermissions
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->paginationPageOptions([2, 20, 50, 500, 1000])
-            ->defaultPaginationPageOption(50);
+            ->paginationPageOptions([20, 50, 500, 1000])
+            ->defaultPaginationPageOption(500);
     }
 
     private static function vehicleColumns(): array
