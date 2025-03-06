@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\ColumnGroup;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -124,8 +125,8 @@ class DangKyResource extends Resource implements HasShieldPermissions
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->paginationPageOptions([20, 50, 500, 1000]);
-
+            ->paginationPageOptions([2, 20, 50, 500, 1000])
+            ->defaultPaginationPageOption(50);
     }
 
     private static function vehicleColumns(): array
@@ -150,10 +151,14 @@ class DangKyResource extends Resource implements HasShieldPermissions
                             ($record->{"{$type}_muc_4"} ?? 0)
                         )
                         ->formatStateUsing(fn($state) => "<strong><em>" . number_format($state, 0, ',', '.') . "</em></strong>") // Format number
-
                         ->html()
-                        ->alignCenter()
-                        ->extraHeaderAttributes(['class' => 'text-center']),
+                        ->alignRight()
+                        ->summarize(
+                            Sum::make()
+                                ->formatStateUsing(fn($state) => "<strong style='color: red;'>" . number_format($state, 0, ',', '.') . "</strong>") // Tổng cũng màu đỏ
+                                ->html()
+                        ),
+
                     array_keys(self::vehicleColumns()),
                     self::vehicleColumns()
                 )
@@ -169,7 +174,12 @@ class DangKyResource extends Resource implements HasShieldPermissions
                 array_map(
                     fn(string $type, string $label) => TextColumn::make("{$type}_muc_{$muc}")
                         ->label($label)
-                        ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.')), // Format number
+                        ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.'))
+                        ->alignRight()
+                        ->summarize(Sum::make()
+                            ->formatStateUsing(fn($state) => "<strong style='color: green;'>" . number_format($state, 0, ',', '.') . "</strong>")
+                            ->html()
+                        ), // Format number
                     array_keys(self::vehicleColumns()),
                     self::vehicleColumns()
                 )
@@ -181,15 +191,14 @@ class DangKyResource extends Resource implements HasShieldPermissions
     {
         return DateRangeFilter::make('created_at')
             ->label('Chọn khoảng thời gian')
+            ->defaultYesterday()
             ->query(function (Builder $query, array $data) {
                 if (empty($data['created_at'])) {
                     return $query;
                 }
-
                 [$from, $to] = explode(' - ', $data['created_at']);
                 $from = Carbon::createFromFormat('d/m/Y', trim($from))->startOfDay();
                 $to = Carbon::createFromFormat('d/m/Y', trim($to))->endOfDay();
-
                 return $query->whereBetween('dang_kies.created_at', [$from, $to]);
             })
             ->indicateUsing(function (array $data): ?string {
@@ -228,6 +237,12 @@ class DangKyResource extends Resource implements HasShieldPermissions
             DB::raw('SUM(dang_kies.xe_may_muc_4) as xe_may_muc_4'),
             DB::raw('SUM(dang_kies.xe_may_dien_muc_3) as xe_may_dien_muc_3'),
             DB::raw('SUM(dang_kies.xe_may_dien_muc_4) as xe_may_dien_muc_4'),
+
+            // Tạo cột tổng hợp mới
+            DB::raw('(SUM(dang_kies.oto_muc_3) + SUM(dang_kies.oto_muc_4)) as oto_total'),
+            DB::raw('(SUM(dang_kies.xe_may_muc_3) + SUM(dang_kies.xe_may_muc_4)) as xe_may_total'),
+            DB::raw('(SUM(dang_kies.xe_may_dien_muc_3) + SUM(dang_kies.xe_may_dien_muc_4)) as xe_may_dien_total'),
+
             DB::raw('MIN(dang_kies.created_at) as created_at'),
             DB::raw('MAX(dang_kies.updated_at) as updated_at')
         ])
