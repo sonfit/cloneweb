@@ -47,10 +47,10 @@ class PublicCreateDangKy extends CreateDangKy
             abort(Response::HTTP_FORBIDDEN, 'Vui lòng cung cấp tên người dùng!');
         }
 
-        $currentHour = now()->hour;
-        if ($currentHour < 17 || $currentHour > 23) {
-            abort(Response::HTTP_FORBIDDEN, 'Truy cập chỉ được phép từ 17h đến 23h59.');
-        }
+//        $currentHour = now()->hour;
+//        if ($currentHour < 17 || $currentHour > 23) {
+//            abort(Response::HTTP_FORBIDDEN, 'Truy cập chỉ được phép từ 17h đến 23h59.');
+//        }
         // Tìm người dùng theo 'name' và lưu vào $this->user
         $this->user = User::where('name', $this->name)->first();
 
@@ -63,7 +63,28 @@ class PublicCreateDangKy extends CreateDangKy
         $hasRecordToday = $this->user->dangkies()->whereDate('created_at', today())->first();
 
         if ($hasRecordToday) {
-            abort(Response::HTTP_FORBIDDEN, "Đã tồn tại bản ghi vào lúc {$hasRecordToday->created_at->format('H:i:s d-m-Y')}.\nNếu sai sót, vui lòng liên hệ theo số điện thoại: ...");
+            // Lọc chỉ lấy các trường mong muốn
+            $filteredData = collect($hasRecordToday->toArray())->except(['id', 'user_id', 'ip_user', 'created_at', 'updated_at']);
+
+            // Chuyển đổi key từ snake_case sang dạng có dấu cách và viết hoa chữ cái đầu
+            $formattedData = $filteredData->mapWithKeys(function ($value, $key) {
+                $formattedKey = ucfirst(str_replace('_', ' ', $key));
+                return [$formattedKey => $value];
+            });
+
+            // Chuyển dữ liệu thành chuỗi dễ đọc với mỗi dòng là một thông tin
+            $recordDetails = $formattedData->map(function ($value, $key) {
+                return "- {$key}: {$value}";
+            })->implode(PHP_EOL); // Sử dụng PHP_EOL để đảm bảo xuống dòng đúng cách
+
+            // Tạo thông báo lỗi với định dạng đúng
+            $errorMessage = "Đã tồn tại bản ghi vào lúc {$hasRecordToday->created_at->format('H:i:s d-m-Y')}." . PHP_EOL . PHP_EOL
+                . "Chi tiết bản ghi:" . PHP_EOL
+                . $recordDetails . PHP_EOL . PHP_EOL
+                . "Nếu sai sót, vui lòng liên hệ theo số điện thoại: ...";
+
+            // Sử dụng abort để trả về lỗi và dừng xử lý
+            abort(Response::HTTP_FORBIDDEN, $errorMessage);
         }
 
         // Điền dữ liệu vào form nếu không có lỗi
