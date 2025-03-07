@@ -20,6 +20,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Joaopaulolndev\FilamentGeneralSettings\FilamentGeneralSettingsPlugin;
+use Kenepa\Banner\BannerPlugin;
 
 
 class AdminPanelProvider extends PanelProvider
@@ -76,12 +77,18 @@ class AdminPanelProvider extends PanelProvider
                     ]),
 
                 FilamentGeneralSettingsPlugin::make()
-//                    ->canAccess(fn() => auth()->user()->id === 1)
+                    ->canAccess(fn() => auth()->check() && auth()->user()->hasRole('super-admin'))
                     ->setSort(3)
                     ->setIcon('heroicon-o-cog')
                     ->setNavigationGroup('Settings')
                     ->setTitle('General Settings')
                     ->setNavigationLabel('General Settings'),
+
+//                BannerPlugin::make()
+//                    ->navigationIcon('heroicon-o-megaphone')
+//                    ->navigationLabel('Banners')
+//                    ->navigationGroup('Marketing')
+//                    ->navigationSort(1)
 
             ]);
 
