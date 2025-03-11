@@ -81,7 +81,7 @@ class PublicCreateDangKy extends CreateDangKy
             $errorMessage = "Đã tồn tại bản ghi vào lúc {$hasRecordToday->created_at->format('H:i:s d-m-Y')}." . PHP_EOL . PHP_EOL
                 . "Chi tiết bản ghi:" . PHP_EOL
                 . $recordDetails . PHP_EOL . PHP_EOL
-                . "Nếu sai sót, vui lòng liên hệ theo số điện thoại: ...";
+                . "Nếu sai sót, vui lòng liên hệ theo số điện thoại: 0988 820 234";
 
             // Sử dụng abort để trả về lỗi và dừng xử lý
             abort(Response::HTTP_FORBIDDEN, $errorMessage);
