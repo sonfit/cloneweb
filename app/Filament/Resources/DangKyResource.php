@@ -3,17 +3,17 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\DangKyResource\Pages;
-use App\Filament\Resources\UserResource\Pages\ViewUser;
 use App\Models\DangKy;
+use App\Models\User;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Carbon\Carbon;
+use Filament\Tables\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\ColumnGroup;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
@@ -33,6 +33,7 @@ class DangKyResource extends Resource implements HasShieldPermissions
     protected static ?string $slug = 'dang-ky';
 
     protected $listeners = ['refreshTable' => '$refresh'];
+
 
     public static function form(Form $form): Form
     {
@@ -105,7 +106,7 @@ class DangKyResource extends Resource implements HasShieldPermissions
             ->defaultSort('created_at', 'asc')
             ->striped()
             ->columns([
-                TextColumn::make('user.name_full')
+                TextColumn::make('name_full')
                     ->searchable()
                     ->sortable()
                     ->label('Tên Đơn vị'),
@@ -149,13 +150,15 @@ class DangKyResource extends Resource implements HasShieldPermissions
                             ($record->{"{$type}_muc_4"} ?? 0)
                         )
                         ->formatStateUsing(fn($state) => "<strong><em>" . number_format($state, 0, ',', '.') . "</em></strong>") // Format number
-                        ->html()
                         ->alignRight()
                         ->summarize(
                             Sum::make()
-                                ->formatStateUsing(fn($state) => "<strong style='color: red;'>" . number_format($state, 0, ',', '.') . "</strong>") // Tổng cũng màu đỏ
+                                ->formatStateUsing(fn($state) => "<strong style='color: red;'>" . number_format($state, 0, ',', '.') . "</strong>")
                                 ->html()
+
                         )
+                        ->html()
+
                     ,
 
                     array_keys(self::vehicleColumns()),
@@ -163,7 +166,6 @@ class DangKyResource extends Resource implements HasShieldPermissions
                 )
             );
     }
-
     // Hàm tạo nhóm theo mức
     public static function createMucGroup(int $muc): ColumnGroup
     {
@@ -185,13 +187,11 @@ class DangKyResource extends Resource implements HasShieldPermissions
                 )
             );
     }
-
-    // Bộ lọc ngày
+    //Bộ lọc ngày
     public static function createDateFilter(): DateRangeFilter
     {
         return DateRangeFilter::make('created_at')
             ->label('Chọn khoảng thời gian')
-
             ->query(function (Builder $query, array $data) {
                 if (empty($data['created_at'])) {
                     return $query;
@@ -205,7 +205,6 @@ class DangKyResource extends Resource implements HasShieldPermissions
                 if (empty($data['created_at'])) {
                     return null;
                 }
-
                 [$from, $to] = explode(' - ', $data['created_at']);
                 return "Từ ngày $from đến $to";
             });
@@ -250,6 +249,38 @@ class DangKyResource extends Resource implements HasShieldPermissions
         return $query;
     }
 
+    public static function getUsersWithoutRecords(?array $filters = [])
+    {
+        return User::whereNotIn('id', function ($query) use ($filters) {
+            $query->select('user_id')->from('dang_kies');
+
+            // Lấy giá trị bộ lọc ngày
+            $createdAtFilter = $filters['created_at'] ?? null;
+
+            if (!$createdAtFilter) {
+                // Nếu không có trong request, lấy mặc định từ `defaultYesterday()`
+                $from = Carbon::yesterday()->startOfDay();
+                $to = Carbon::yesterday()->endOfDay();
+            } else {
+                // Nếu có trong request, sử dụng giá trị đã chọn
+                [$from, $to] = explode(' - ', $createdAtFilter);
+                $from = Carbon::createFromFormat('d/m/Y', trim($from))->startOfDay();
+                $to = Carbon::createFromFormat('d/m/Y', trim($to))->endOfDay();
+            }
+
+            // Áp dụng vào truy vấn
+            $query->whereBetween('dang_kies.created_at', [$from, $to]);
+        })->get();
+    }
+
+
+
+    public static function getUsersWithoutRecords1()
+    {
+        return User::whereNotIn('id', function ($query) {
+            $query->select('user_id')->from('dang_kies');
+        })->get();
+    }
 
     public static function getRelations(): array
     {

@@ -11,7 +11,9 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentAsset;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -20,11 +22,21 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Joaopaulolndev\FilamentGeneralSettings\FilamentGeneralSettingsPlugin;
-use Kenepa\Banner\BannerPlugin;
+use Filament\Support\Assets\Js;
 
 
 class AdminPanelProvider extends PanelProvider
 {
+
+    public function boot(): void
+    {
+        FilamentAsset::register([
+            Js::make('custom-script', __DIR__ . '/../../resources/js/custom-script.js'),
+            Css::make('custom-css', __DIR__ . '/../../resources/js/app/custom-css.css'),
+
+        ]);
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel

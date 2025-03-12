@@ -7,6 +7,7 @@ use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Model;
 
+
 class ListDangKies extends ListRecords
 {
     protected static string $resource = DangKyResource::class;
@@ -15,6 +16,14 @@ class ListDangKies extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
+            Actions\Action::make('showMissingUsers')
+                ->label('User không có bản ghi')
+                ->color('danger')
+                ->modalHeading('Danh sách đơn vi chưa báo cáo')
+                ->modalSubmitAction(false)
+                ->modalContent(fn() => view('filament.modals.missing-users', [
+                    'users' => DangKyResource::getUsersWithoutRecords(request()->query('tableFilters', []))
+                ]))->disabled()
         ];
     }
 

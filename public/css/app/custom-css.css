@@ -1,0 +1,23 @@
+tr.fi-ta-summary-header-row{
+    display: none;
+}
+
+tr.fi-ta-summary-row {
+    position: fixed;
+    bottom: 0;
+    left: 0; /* Thêm left và right 0 để căn full width */
+    right: 0;
+    background-color: #e3cb52;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+    z-index: 1000;
+    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+}
+
+
+.fi-ta,
+.fi-sidebar-nav {
+    margin-bottom: 100px;
+}
+
