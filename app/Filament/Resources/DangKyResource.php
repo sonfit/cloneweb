@@ -153,6 +153,7 @@ class DangKyResource extends Resource implements HasShieldPermissions
                         ->alignRight()
                         ->summarize(
                             Sum::make()
+                                ->label($label)
                                 ->formatStateUsing(fn($state) => "<strong style='color: red;'>" . number_format($state, 0, ',', '.') . "</strong>")
                                 ->html()
 
@@ -178,6 +179,7 @@ class DangKyResource extends Resource implements HasShieldPermissions
                         ->formatStateUsing(fn($state) => number_format($state, 0, ',', '.'))
                         ->alignRight()
                         ->summarize(Sum::make()
+                            ->label($label.' '.$muc)
                             ->formatStateUsing(fn($state) => "<strong style='color: green;'>" . number_format($state, 0, ',', '.') . "</strong>")
                             ->html()
                         )
