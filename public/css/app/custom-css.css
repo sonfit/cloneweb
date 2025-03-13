@@ -7,7 +7,7 @@ tr.fi-ta-summary-row {
     bottom: 0;
     left: 0; /* Thêm left và right 0 để căn full width */
     right: 0;
-    background-color: #e3cb52;
+    background-color: rgba(227, 220, 82, 0.63);
     padding: 10px;
     border-top: 1px solid #ccc;
     z-index: 1000;
@@ -15,9 +15,15 @@ tr.fi-ta-summary-row {
     overflow-x: auto;
 }
 
+.tr.fi-ta-summary-row td {
+    text-align: center; /* Căn giữa nội dung theo chiều ngang */
+    vertical-align: middle; /* Căn giữa nội dung theo chiều dọc */
+}
+
 
 .fi-ta,
-.fi-sidebar-nav {
+.fi-sidebar-nav,
+.fi-modal-window {
     margin-bottom: 100px;
 }
 

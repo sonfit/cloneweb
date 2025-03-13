@@ -21,9 +21,11 @@ class ListDangKies extends ListRecords
                 ->color('danger')
                 ->modalHeading('Danh sách đơn vị chưa báo cáo')
                 ->modalSubmitAction(false)
+                ->modalWidth('7xl')
+                ->extraAttributes(['class' => 'mb-[100px]'])
                 ->modalContent(fn() => view('filament.modals.missing-users', [
                     'data' => DangKyResource::getUsersWithoutRecords(request()->all())
-                ]))
+                ])->with('customStyles', 'margin-bottom: 100px;'))
         ];
     }
 
