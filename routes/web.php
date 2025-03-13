@@ -18,9 +18,20 @@ Route::get('/dk', PublicCreateDangKy::class)
     ->name('dang_ky')
     ->middleware('web');
 
-Route::get('/clear',function (){
-    echo  Artisan::call('optimize:clear');
-    echo  Artisan::call('cache:clear');
-    echo  Artisan::call('config:cache');
-    echo  Artisan::call('route:cache');
+Route::get('/clear', function () {
+    $commands = [
+        'optimize:clear',
+        'cache:clear',
+        'config:clear',
+        'route:clear',
+        'view:clear',
+        'event:clear'
+    ];
+
+    foreach ($commands as $command) {
+        Artisan::call($command);
+//        echo "Đã chạy: $command <br>";
+    }
+
+    abort(403, "✨ Hệ thống đã được dọn dẹp thành công! 🚀");
 });
