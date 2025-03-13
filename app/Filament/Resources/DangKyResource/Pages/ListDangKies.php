@@ -17,7 +17,7 @@ class ListDangKies extends ListRecords
         return [
             Actions\CreateAction::make(),
             Actions\Action::make('showMissingUsers')
-                ->label('User không có bản ghi')
+                ->label('Đơn vị chưa báo cáo')
                 ->color('danger')
                 ->modalHeading('Danh sách đơn vị chưa báo cáo')
                 ->modalSubmitAction(false)
