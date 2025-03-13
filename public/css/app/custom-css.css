@@ -2,23 +2,39 @@ tr.fi-ta-summary-header-row{
     display: none;
 }
 
+/*tr.fi-ta-summary-row {*/
+/*    position: fixed;*/
+/*    bottom: 0;*/
+/*    left: 0; !* Thêm left và right 0 để căn full width *!*/
+/*    right: 0;*/
+/*    background-color: rgba(227, 220, 82, 0.63);*/
+/*    padding: 10px;*/
+/*    border-top: 1px solid #ccc;*/
+/*    z-index: 1000;*/
+/*    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);*/
+/*    overflow-x: auto;*/
+/*}*/
+
+
 tr.fi-ta-summary-row {
     position: fixed;
     bottom: 0;
-    left: 0; /* Thêm left và right 0 để căn full width */
-    right: 0;
+    left: 50%; /* Căn giữa theo trục ngang */
+    transform: translateX(-50%); /* Dịch chuyển ngược lại 50% chiều rộng của chính nó */
     background-color: rgba(227, 220, 82, 0.63);
     padding: 10px;
     border-top: 1px solid #ccc;
     z-index: 1000;
-    box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);
+    /*box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.1);*/
     overflow-x: auto;
+    min-width: 500px; /* Độ rộng tối thiểu để không bị mất nội dung */
+    max-width: 90%; /* Giới hạn chiều rộng tối đa */
+    text-align: center; /* Căn giữa nội dung */
+    white-space: nowrap; /* Ngăn nội dung xuống dòng */
+    border-radius: 8px 8px 0 0; /* Bo góc phía trên */
+    margin: 0 auto; /* Thêm margin auto để đảm bảo căn giữa */
 }
 
-.tr.fi-ta-summary-row td {
-    text-align: center; /* Căn giữa nội dung theo chiều ngang */
-    vertical-align: middle; /* Căn giữa nội dung theo chiều dọc */
-}
 
 
 .fi-ta,
