@@ -257,7 +257,6 @@ class DangKyResource extends Resource implements HasShieldPermissions
         $tableFilters = data_get($decodedFilters, 'data.tableFilters', []);
         $createdAtFilter = data_get($tableFilters, '0.created_at.0.created_at', null);
 
-
         if (!$createdAtFilter) {
             // Nếu không có, mặc định là hôm qua
             $from = Carbon::yesterday()->startOfDay();
