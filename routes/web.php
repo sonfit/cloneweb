@@ -2,6 +2,7 @@
 
 use App\Filament\Pages\PublicCreateDangKy;
 use App\Filament\Pages\PublicCreateTongHop;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
@@ -30,8 +31,15 @@ Route::get('/clear', function () {
 
     foreach ($commands as $command) {
         Artisan::call($command);
-//        echo "Đã chạy: $command <br>";
+        echo "Đã chạy: $command <br>";
     }
 
-    abort(403, "✨ Hệ thống đã được dọn dẹp thành công! 🚀");
+    Notification::make()
+        ->title('Thành công!')
+        ->body('✨ Hệ thống đã được dọn dẹp thành công! 🚀')
+        ->success()
+        ->send();
+
+    return redirect()->back();
+
 });
