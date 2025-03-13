@@ -17,4 +17,9 @@ class EditDangKy extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    public function getTitle(): string
+    {
+        return 'Chỉnh sửa báo cáo đơn vị: ' . $this->record->user->name_full.' - Ngày:'. $this->record->created_at->format('d/m/Y');
+    }
 }

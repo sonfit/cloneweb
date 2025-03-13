@@ -49,8 +49,8 @@ class ViewUser extends ListRecords
                 DangKyResource::createDateFilter(),
             ])
             ->actions([
-//                Tables\Actions\EditAction::make(),
-//                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([]) ->recordUrl(null);
     }
