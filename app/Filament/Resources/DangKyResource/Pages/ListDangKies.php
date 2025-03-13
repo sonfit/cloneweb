@@ -19,11 +19,11 @@ class ListDangKies extends ListRecords
             Actions\Action::make('showMissingUsers')
                 ->label('User không có bản ghi')
                 ->color('danger')
-                ->modalHeading('Danh sách đơn vi chưa báo cáo')
+                ->modalHeading('Danh sách đơn vị chưa báo cáo')
                 ->modalSubmitAction(false)
                 ->modalContent(fn() => view('filament.modals.missing-users', [
-                    'users' => DangKyResource::getUsersWithoutRecords(request()->query('tableFilters', []))
-                ]))->disabled()
+                    'data' => DangKyResource::getUsersWithoutRecords(request()->all())
+                ]))
         ];
     }
 

@@ -253,27 +253,30 @@ class DangKyResource extends Resource implements HasShieldPermissions
 
     public static function getUsersWithoutRecords(?array $filters = [])
     {
-        return User::whereNotIn('id', function ($query) use ($filters) {
-            $query->select('user_id')->from('dang_kies');
+        $decodedFilters = json_decode($filters['components'][0]['snapshot'] ?? '{}', true);
+        $tableFilters = data_get($decodedFilters, 'data.tableFilters', []);
+        $createdAtFilter = data_get($tableFilters, '0.created_at.0.created_at', null);
 
-            // Lấy giá trị bộ lọc ngày
-            $createdAtFilter = $filters['created_at'] ?? null;
 
-            if (!$createdAtFilter) {
-                // Nếu không có trong request, lấy mặc định từ `defaultYesterday()`
-                $from = Carbon::yesterday()->startOfDay();
-                $to = Carbon::yesterday()->endOfDay();
-            } else {
-                // Nếu có trong request, sử dụng giá trị đã chọn
-                [$from, $to] = explode(' - ', $createdAtFilter);
-                $from = Carbon::createFromFormat('d/m/Y', trim($from))->startOfDay();
-                $to = Carbon::createFromFormat('d/m/Y', trim($to))->endOfDay();
-            }
+        if (!$createdAtFilter) {
+            // Nếu không có, mặc định là hôm qua
+            $from = Carbon::yesterday()->startOfDay();
+            $to = Carbon::yesterday()->endOfDay();
+        } else {
+            // Nếu có, xử lý chuỗi ngày tháng
+            [$from, $to] = explode(' - ', $createdAtFilter);
+            $from = Carbon::createFromFormat('d/m/Y', trim($from))->startOfDay();
+            $to = Carbon::createFromFormat('d/m/Y', trim($to))->endOfDay();
+        }
 
-            // Áp dụng vào truy vấn
-            $query->whereBetween('dang_kies.created_at', [$from, $to]);
+        $users = User::where('groupid', '!=', 0)
+        ->whereDoesntHave('dangkies', function ($query) use ($from, $to) {
+            $query->whereBetween('created_at', [$from, $to]);
         })->get();
+        return compact('users', 'from', 'to');
+
     }
+
 
 
 
