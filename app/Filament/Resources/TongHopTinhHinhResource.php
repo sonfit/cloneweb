@@ -95,7 +95,7 @@ class TongHopTinhHinhResource extends Resource
                 Tables\Columns\TextColumn::make('link')
                     ->label('Link bài viết')
                     ->url(fn ($record) => $record->link, true) // click được, mở tab mới
-                    ->limit(20) // cắt ngắn link cho gọn
+                    ->limit(50) // cắt ngắn link cho gọn
                     ->wrap()
                     ->description(fn ($record) => $record->sumary ?? '') // tóm tắt hiển thị dưới
                     ->sortable(),
