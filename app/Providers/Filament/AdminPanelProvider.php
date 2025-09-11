@@ -31,8 +31,8 @@ class AdminPanelProvider extends PanelProvider
     public function boot(): void
     {
         FilamentAsset::register([
-            Js::make('custom-script', __DIR__ . '/../../resources/js/custom-script.js'),
-            Css::make('custom-css', __DIR__ . '/../../resources/js/app/custom-css.css'),
+//            Js::make('custom-script', __DIR__ . '/../../resources/js/custom-script.js'),
+//            Css::make('custom-css', __DIR__ . '/../../resources/js/app/custom-css.css'),
 
         ]);
     }

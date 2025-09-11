@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Filament\Forms\Components\FileUpload;
 
 class TongHopTinhHinhResource extends Resource
 {
@@ -58,9 +59,13 @@ class TongHopTinhHinhResource extends Resource
                     ->label('Ảnh chụp màn hình')
                     ->image()
                     ->disk('public')
-                    ->directory(fn () => 'uploads/tinhhinh/' . Carbon::now()->format('Ymd'))
+                    ->directory(fn () => 'uploads/tinhhinh/' . now()->format('Ymd'))
                     ->maxSize(20480)
-                    ->nullable(),
+                    ->nullable()
+                    ->optimize('webp')
+                    ->resize(80),
+
+
 
                 Forms\Components\Textarea::make('contents_text')
                     ->label('Nội dung bài viết')
