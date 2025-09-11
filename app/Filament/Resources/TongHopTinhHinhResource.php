@@ -53,7 +53,7 @@ class TongHopTinhHinhResource extends Resource
                             6 => 'Group Telegram'
                         ];
 
-                        return $record->name . ' - ' . ($map[$record->type] ?? 'Không rõ');
+                        return ($map[$record->type]. ' - ' . $record->name   ?? 'Không rõ');
                     }),
 
                 Forms\Components\Radio::make('phanloai')
@@ -92,15 +92,12 @@ class TongHopTinhHinhResource extends Resource
                             ->color('success')
                             ->requiresConfirmation(false)
                             ->action(function (Forms\Components\Textarea $component, $state, $set) {
-                                // Lấy nội dung từ trường contents_text
                                 $content = $state;
-                                // Gọi phương thức generateSummary
                                 if(empty($content)){
                                     static::sendErrorNotification('Nội dung bài viết trống.')->send();
                                     return;
                                 }
                                 $summary = static::generateSummary($content);
-                                // Cập nhật giá trị cho trường sumary
                                 $set('sumary', $summary);
                             })
                             ->extraAttributes(['class' => 'text-sm'])
@@ -108,7 +105,7 @@ class TongHopTinhHinhResource extends Resource
 
                 Forms\Components\Textarea::make('sumary')
                     ->label('Tóm tắt nội dung')
-                    ->maxLength(500)
+                    ->maxLength(1000)
                     ->rows(6),
 
                 Forms\Components\Select::make('id_user')
