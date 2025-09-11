@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class TongHopTinhHinhResource extends Resource
 {
@@ -108,11 +109,27 @@ class TongHopTinhHinhResource extends Resource
                     ->wrap(),
 
                 // Hình ảnh (thumbnail)
+//                Tables\Columns\ImageColumn::make('pic')
+//                    ->label('Hình ảnh')
+//                    ->disk('public')     // dùng same disk như FileUpload
+//                    ->height(80)
+//                    ->width(120),
+
                 Tables\Columns\ImageColumn::make('pic')
                     ->label('Hình ảnh')
-                    ->disk('public')     // dùng same disk như FileUpload
+                    ->disk('public')
                     ->height(80)
-                    ->width(120),
+                    ->width(120)
+                    ->action(
+                        Tables\Actions\Action::make('Xem ảnh')
+                            ->modalHeading('Xem ảnh')
+                            ->modalContent(fn ($record) =>
+                            view('filament.modals.preview-image', [
+                                'url' => Storage::disk('public')->url($record->pic)
+                            ])
+                            )
+                            ->modalButton('Đóng')
+                    ),
 
                 // Người ghi nhận (user)
                 Tables\Columns\TextColumn::make('user.name')
