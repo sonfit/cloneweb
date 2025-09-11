@@ -65,11 +65,12 @@ class MucTieuResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->sortable()
-                    ->label('ID'),
+                    ->label('STT')
+                    ->rowIndex(),
 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên hiển thị')
+                    ->url(fn ($record) => $record->link, true)
                     ->searchable()
                     ->sortable(),
 
@@ -86,10 +87,10 @@ class MucTieuResource extends Resource
                         default => 'Khác',
                     }),
 
-                Tables\Columns\TextColumn::make('link')
-                    ->label('Link')
-                    ->url(fn ($record) => $record->link, true)
-                    ->limit(50),
+//                Tables\Columns\TextColumn::make('link')
+//                    ->label('Link')
+//                    ->url(fn ($record) => $record->link, true)
+//                    ->limit(50),
 
                 Tables\Columns\TextColumn::make('time_create')
                     ->label('Tạo trên hệ thống')
@@ -98,8 +99,7 @@ class MucTieuResource extends Resource
                 Tables\Columns\TextColumn::make('time_crawl')
                     ->label('Lần bot truy cập')
                     ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo bản ghi')
@@ -116,8 +116,7 @@ class MucTieuResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
-            ])
-            ;
+            ]);
     }
 
     public static function getRelations(): array
