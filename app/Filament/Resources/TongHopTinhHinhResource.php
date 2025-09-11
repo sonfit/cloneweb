@@ -109,12 +109,6 @@ class TongHopTinhHinhResource extends Resource
                     ->wrap(),
 
                 // Hình ảnh (thumbnail)
-//                Tables\Columns\ImageColumn::make('pic')
-//                    ->label('Hình ảnh')
-//                    ->disk('public')     // dùng same disk như FileUpload
-//                    ->height(80)
-//                    ->width(120),
-
                 Tables\Columns\ImageColumn::make('pic')
                     ->label('Hình ảnh')
                     ->disk('public')
@@ -128,7 +122,7 @@ class TongHopTinhHinhResource extends Resource
                                 'url' => Storage::disk('public')->url($record->pic)
                             ])
                             )
-                            ->modalButton('Đóng')
+                            ->modalSubmitAction(false)
                     ),
 
                 // Người ghi nhận (user)
