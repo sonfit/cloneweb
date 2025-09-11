@@ -86,7 +86,6 @@ class TongHopTinhHinhResource extends Resource
     {
         return $table
             ->columns([
-
                 // STT
                 Tables\Columns\TextColumn::make('stt')
                     ->label('STT')

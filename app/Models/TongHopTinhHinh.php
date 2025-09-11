@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class TongHopTinhHinh extends Model
 {
@@ -18,6 +19,24 @@ class TongHopTinhHinh extends Model
         'id_user',
         'time',
     ];
+
+    protected static function booted()
+    {
+        static::deleting(function ($record) {
+            if ($record->pic) {
+                Storage::disk('public')->delete($record->pic);
+            }
+        });
+
+        static::updating(function ($record) {
+            if ($record->isDirty('pic')) { // Nếu ảnh thay đổi
+                $oldPic = $record->getOriginal('pic');
+                if ($oldPic && $oldPic !== $record->pic) {
+                    Storage::disk('public')->delete($oldPic);
+                }
+            }
+        });
+    }
 
     public function user()
     {
