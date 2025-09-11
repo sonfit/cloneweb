@@ -9,7 +9,6 @@ use Filament\Resources\Pages\ListRecords;
 class ListMucTieus extends ListRecords
 {
     protected static string $resource = MucTieuResource::class;
-
     protected function getHeaderActions(): array
     {
         return [

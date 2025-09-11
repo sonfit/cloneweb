@@ -115,7 +115,8 @@ class MucTieuResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ])
+            ;
     }
 
     public static function getRelations(): array
