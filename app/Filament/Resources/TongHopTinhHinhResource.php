@@ -7,6 +7,7 @@ use App\Filament\Resources\TongHopTinhHinhResource\RelationManagers;
 use App\Models\TongHopTinhHinh;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -15,7 +16,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\FileUpload;
-
+use Joaopaulolndev\FilamentGeneralSettings\Models\GeneralSetting;
+use OpenAI;
 class TongHopTinhHinhResource extends Resource
 {
     protected static ?string $model = TongHopTinhHinh::class;
@@ -65,11 +67,31 @@ class TongHopTinhHinhResource extends Resource
                     ->optimize('webp')
                     ->resize(80),
 
-
-
                 Forms\Components\Textarea::make('contents_text')
                     ->label('Nội dung bài viết')
-                    ->rows(6),
+                    ->rows(6)
+                    ->hint('Nhấn để tự động tóm tắt từ trường "Nội dung bài viết"')
+                    ->hintAction(
+                        Forms\Components\Actions\Action::make('generateSummary')
+                            ->label('Tóm tắt')
+                            ->icon('heroicon-m-sparkles')
+                            ->tooltip('Tóm tắt bằng AI')
+                            ->color('success')
+                            ->requiresConfirmation(false)
+                            ->action(function (Forms\Components\Textarea $component, $state, $set) {
+                                // Lấy nội dung từ trường contents_text
+                                $content = $state;
+                                // Gọi phương thức generateSummary
+                                if(empty($content)){
+                                    static::sendErrorNotification('Nội dung bài viết trống.')->send();
+                                    return;
+                                }
+                                $summary = static::generateSummary($content);
+                                // Cập nhật giá trị cho trường sumary
+                                $set('sumary', $summary);
+                            })
+                            ->extraAttributes(['class' => 'text-sm'])
+                    ),
 
                 Forms\Components\Textarea::make('sumary')
                     ->label('Tóm tắt nội dung')
@@ -186,4 +208,91 @@ class TongHopTinhHinhResource extends Resource
             'edit' => Pages\EditTongHopTinhHinh::route('/{record}/edit'),
         ];
     }
+
+    public static function sendErrorNotification(string $message): Notification
+    {
+        return Notification::make()
+            ->title('Thất bại')
+            ->danger()
+            ->body($message)
+            ->send();
+    }
+
+    public static function sendSuccessNotification(string $message): Notification
+    {
+        return Notification::make()
+            ->title('Thành công')
+            ->success()
+            ->body($message)
+            ->send();
+    }
+
+
+
+    public static function generateSummary($content): string
+    {
+        // Get API config
+        $apiConfig = static::getApiConfiguration();
+
+        if (!$apiConfig['valid']) {
+            static::sendErrorNotification($apiConfig['message']);
+        }
+
+        // Build AI prompt
+        $messages = static::buildAIPrompt($content, $apiConfig['promptContent']);
+        try {
+            $client = OpenAI::client($apiConfig['key']);
+            $response = $client->chat()->create([
+                'model' => $apiConfig['model'],
+                'messages' => $messages,
+                'temperature' => (int)$apiConfig['temperature'],
+                'max_tokens' => (int)$apiConfig['max_tokens'],
+            ]);
+
+            $summary = $response->choices[0]->message->content ?? 'Không thể tóm tắt nội dung.';
+        } catch (\Exception $e) {
+            return 'Lỗi trong quá trình tóm tắt: ' . $e->getMessage();
+        }
+
+        // Thông báo thành công
+        static::sendSuccessNotification('Tóm tắt nội dung thành công!');
+
+        return $summary;
+
+    }
+    public static function getApiConfiguration(): array
+    {
+        $settings = GeneralSetting::first();
+
+        return [
+            'key' => $settings->more_configs['key_api'] ?? null,
+            'model' => $settings->more_configs['model_api'] ?? 'gpt-3.5-turbo',
+            'temperature' => $settings->more_configs['temperature_api'] ?? '0.5',
+            'max_tokens' => $settings->more_configs['max_tokens_api'] ?? '300',
+            'promptContent' => $settings->more_configs[$settings->more_configs['select_prompt'] ?? 'prompt_1'] ?? '',
+            'valid' => !empty($settings->more_configs['key_api']),
+            'message' => empty($settings) ? 'Cấu hình hệ thống không tồn tại' : 'Cấu hình API không hợp lệ'
+        ];
+    }
+    public static function buildAIPrompt(?string $content, string $prompt): array
+    {
+        $messages = [
+            [
+                'role' => 'system',
+                'content' => $prompt
+            ],
+            [
+                'role' => 'user',
+                'content' => $content
+            ],
+        ];
+
+        return $messages;
+    }
+
+
+
+
+
+
 }
