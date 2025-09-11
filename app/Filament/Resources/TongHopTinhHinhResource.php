@@ -141,7 +141,7 @@ class TongHopTinhHinhResource extends Resource
                 // Mục tiêu (liên kết từ bảng muc_tieus)
                 Tables\Columns\TextColumn::make('muctieu.name')
                     ->label('Mục tiêu')
-                    ->url(fn ($record) => $record->link, true) // link sang bài gốc
+                    ->url(fn ($record) => $record->muctieu?->link, true) // link sang bài gốc
                     ->color('primary')
                     ->wrap(),
 
