@@ -1,4 +1,4 @@
-<div class="flex justify-center items-center">
+<div class="flex justify-center items-center w-full h-full">
     <img src="{{ $url }}"
-         class="max-w-[90vw] max-h-[80vh] w-auto h-auto object-contain rounded shadow-lg">
+         class="max-w-full max-h-[10vh] object-contain rounded shadow-lg">
 </div>
