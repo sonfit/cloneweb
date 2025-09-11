@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('groupid')->after('name')->default(0);
-            $table->string('name_full')->after('name')->nullable();
-        });
+//        Schema::table('users', function (Blueprint $table) {
+//            $table->string('groupid')->after('name')->default(0);
+//            $table->string('name_full')->after('name')->nullable();
+//        });
     }
 
     /**

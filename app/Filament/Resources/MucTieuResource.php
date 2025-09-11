@@ -55,6 +55,7 @@ class MucTieuResource extends Resource
 
                 Forms\Components\DateTimePicker::make('time_crawl')
                     ->label('Lần cuối bot truy cập')
+                    ->default(now())
                     ->nullable(),
             ]);
     }

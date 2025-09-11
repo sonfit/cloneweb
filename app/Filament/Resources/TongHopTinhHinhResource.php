@@ -29,7 +29,8 @@ class TongHopTinhHinhResource extends Resource
                 Forms\Components\TextInput::make('link')
                     ->label('Link bài viết')
                     ->maxLength(150)
-                    ->required(),
+                    ->required()
+                    ->unique(ignoreRecord: true),
 
                 Forms\Components\Select::make('id_muctieu')
                     ->label('Mục tiêu')
@@ -54,6 +55,7 @@ class TongHopTinhHinhResource extends Resource
                 Forms\Components\FileUpload::make('pic')
                     ->label('Ảnh chụp màn hình')
                     ->image()
+                    ->disk('public')
                     ->directory('uploads/tinhhinh')
                     ->maxSize(20480)
                     ->nullable(),
@@ -90,10 +92,12 @@ class TongHopTinhHinhResource extends Resource
                     ->rowIndex(), // Tự động đánh số theo thứ tự hiển thị
 
                 // Nội dung tóm tắt
-                Tables\Columns\TextColumn::make('sumary')
-                    ->label('Nội dung (Tóm tắt)')
-                    ->limit(120)
-                    ->wrap() // xuống dòng khi dài
+                Tables\Columns\TextColumn::make('link')
+                    ->label('Link bài viết')
+                    ->url(fn ($record) => $record->link, true) // click được, mở tab mới
+                    ->limit(80) // cắt ngắn link cho gọn
+                    ->wrap()
+                    ->description(fn ($record) => $record->sumary ?? '') // tóm tắt hiển thị dưới
                     ->sortable(),
 
                 // Mục tiêu (liên kết từ bảng muc_tieus)

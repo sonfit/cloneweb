@@ -41,9 +41,7 @@ return new class extends Migration
                 ->nullable()
                 ->comment('Phân loại tin tức: ANQG/TTXH...');
 
-            $table->unsignedInteger('time')
-                ->nullable()
-                ->comment('Thời gian ghi nhận chia sẻ (timestamp Unix)');
+            $table->timestamp('time')->nullable()->comment('Thời gian ghi nhận chia sẻ');
 
             $table->timestamps();
 
