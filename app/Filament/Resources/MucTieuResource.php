@@ -31,9 +31,8 @@ class MucTieuResource extends Resource
                     ->required()
                     ->maxLength(50),
 
-                Forms\Components\Select::make('type')
+                Forms\Components\Radio::make('type')
                     ->label('Phân loại')
-                    ->required()
                     ->options([
                         1 => 'Facebook cá nhân',
                         2 => 'Fanpage',
@@ -41,7 +40,11 @@ class MucTieuResource extends Resource
                         4 => 'TikTok',
                         5 => 'Channel Telegram',
                         6 => 'Group Telegram',
-                    ]),
+                    ])
+                    ->default(1)
+                    ->required()
+                    ->columns(2)
+                    ->extraAttributes(['style' => 'margin-left: 50px;']),
 
                 Forms\Components\TextInput::make('link')
                     ->label('Link mục tiêu')

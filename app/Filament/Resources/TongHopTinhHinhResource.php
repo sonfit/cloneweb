@@ -42,7 +42,19 @@ class TongHopTinhHinhResource extends Resource
                     ->relationship('mucTieu', 'name')
                     ->searchable()
                     ->preload()
-                    ->nullable(),
+                    ->nullable()
+                    ->getOptionLabelFromRecordUsing(function ($record) {
+                        $map = [
+                            1 => 'Facebook cá nhân',
+                            2 => 'Fanpage',
+                            3 => 'Group',
+                            4 => 'TikTok',
+                            5 => 'Channel Telegram',
+                            6 => 'Group Telegram'
+                        ];
+
+                        return $record->name . ' - ' . ($map[$record->type] ?? 'Không rõ');
+                    }),
 
                 Forms\Components\Radio::make('phanloai')
                     ->label('Phân loại tin tức')
@@ -54,8 +66,9 @@ class TongHopTinhHinhResource extends Resource
                         5 => 'Dư luận xã hội liên quan CTP',
                     ])
                     ->default(1)
-                    ->inline() // hiện radio theo hàng ngang
-                    ->required(),
+                    ->required()
+                    ->columns(2)
+                    ->extraAttributes(['style' => 'margin-left: 50px;']),
 
                 Forms\Components\FileUpload::make('pic')
                     ->label('Ảnh chụp màn hình')
