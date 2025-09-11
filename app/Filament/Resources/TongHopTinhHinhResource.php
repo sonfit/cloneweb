@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Carbon;
 
 class TongHopTinhHinhResource extends Resource
 {
@@ -56,7 +57,7 @@ class TongHopTinhHinhResource extends Resource
                     ->label('Ảnh chụp màn hình')
                     ->image()
                     ->disk('public')
-                    ->directory('uploads/tinhhinh')
+                    ->directory(fn () => 'uploads/tinhhinh/' . Carbon::now()->format('Ymd'))
                     ->maxSize(20480)
                     ->nullable(),
 
