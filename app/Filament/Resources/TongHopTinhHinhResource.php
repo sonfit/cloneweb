@@ -75,39 +75,6 @@ class TongHopTinhHinhResource extends Resource
                     ->nullable()
                     ->optimize('webp'),
 
-
-//                Forms\Components\Textarea::make('contents_text')
-//                    ->label('Nội dung bài viết')
-////                    ->label(fn() => new \Illuminate\Support\HtmlString(
-////                        'Nội dung bài viết
-////        <input type="text" name="so_ky_tu" id="so_ky_tu" value="100"  class="w-16 h-1 border border-gray-300 rounded text-sm px-1" />'
-////                    ))
-//                    ->rows(6)
-//                    ->hint('Nhấn để tự động tóm tắt từ trường "Nội dung bài viết"')
-//                    ->hintAction(
-//                        Forms\Components\Actions\Action::make('generateSummary')
-//                            ->label('Tóm tắt')
-//                            ->icon('heroicon-m-sparkles')
-//                            ->tooltip('Tóm tắt bằng AI')
-//                            ->color('success')
-//                            ->requiresConfirmation(false)
-//                            ->action(function (Forms\Components\Textarea $component, $state, $set, $get) {
-//                                $content = $state;
-//
-//                                if (empty($content)) {
-//                                    static::sendErrorNotification('Nội dung bài viết trống.')->send();
-//                                    return;
-//                                }
-//                                $soKyTu = (int) $get('so_ky_tu') ?: 100;
-//                                $summary = static::generateSummary($content, $soKyTu);
-//                                $set('sumary', $summary);
-//                            })
-//                            ->extraAttributes(['class' => 'text-sm'])
-//                    )->columnSpanFull(),
-
-
-
-
                 Forms\Components\Grid::make(10)
                     ->schema([
                         Forms\Components\Textarea::make('contents_text')
