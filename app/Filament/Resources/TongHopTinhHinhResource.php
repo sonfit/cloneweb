@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
 use Joaopaulolndev\FilamentGeneralSettings\Models\GeneralSetting;
 use OpenAI;
+
 class TongHopTinhHinhResource extends Resource
 {
     protected static ?string $model = TongHopTinhHinh::class;
@@ -48,7 +49,7 @@ class TongHopTinhHinhResource extends Resource
                             6 => 'Group Telegram'
                         ];
 
-                        return ($map[$record->type]. ' - ' . $record->name   ?? 'Không rõ');
+                        return ($map[$record->type] . ' - ' . $record->name ?? 'Không rõ');
                     }),
 
                 Forms\Components\Radio::make('phanloai')
@@ -69,50 +70,109 @@ class TongHopTinhHinhResource extends Resource
                     ->label('Ảnh chụp màn hình')
                     ->image()
                     ->disk('public')
-                    ->directory(fn () => 'uploads/tinhhinh/' . now()->format('Ymd'))
+                    ->directory(fn() => 'uploads/tinhhinh/' . now()->format('Ymd'))
                     ->maxSize(20480)
                     ->nullable()
                     ->optimize('webp'),
 
 
-                Forms\Components\Textarea::make('contents_text')
-                    ->label('Nội dung bài viết')
-                    ->rows(6)
-                    ->hint('Nhấn để tự động tóm tắt từ trường "Nội dung bài viết"')
-                    ->hintAction(
-                        Forms\Components\Actions\Action::make('generateSummary')
-                            ->label('Tóm tắt')
-                            ->icon('heroicon-m-sparkles')
-                            ->tooltip('Tóm tắt bằng AI')
-                            ->color('success')
-                            ->requiresConfirmation(false)
-                            ->action(function (Forms\Components\Textarea $component, $state, $set) {
-                                $content = $state;
-                                if(empty($content)){
-                                    static::sendErrorNotification('Nội dung bài viết trống.')->send();
-                                    return;
+//                Forms\Components\Textarea::make('contents_text')
+//                    ->label('Nội dung bài viết')
+////                    ->label(fn() => new \Illuminate\Support\HtmlString(
+////                        'Nội dung bài viết
+////        <input type="text" name="so_ky_tu" id="so_ky_tu" value="100"  class="w-16 h-1 border border-gray-300 rounded text-sm px-1" />'
+////                    ))
+//                    ->rows(6)
+//                    ->hint('Nhấn để tự động tóm tắt từ trường "Nội dung bài viết"')
+//                    ->hintAction(
+//                        Forms\Components\Actions\Action::make('generateSummary')
+//                            ->label('Tóm tắt')
+//                            ->icon('heroicon-m-sparkles')
+//                            ->tooltip('Tóm tắt bằng AI')
+//                            ->color('success')
+//                            ->requiresConfirmation(false)
+//                            ->action(function (Forms\Components\Textarea $component, $state, $set, $get) {
+//                                $content = $state;
+//
+//                                if (empty($content)) {
+//                                    static::sendErrorNotification('Nội dung bài viết trống.')->send();
+//                                    return;
+//                                }
+//                                $soKyTu = (int) $get('so_ky_tu') ?: 100;
+//                                $summary = static::generateSummary($content, $soKyTu);
+//                                $set('sumary', $summary);
+//                            })
+//                            ->extraAttributes(['class' => 'text-sm'])
+//                    )->columnSpanFull(),
+
+
+
+
+                Forms\Components\Grid::make(10)
+                    ->schema([
+                        Forms\Components\Textarea::make('contents_text')
+                            ->label('Nội dung bài viết')
+                            ->rows(6)
+                            ->hint('Nhấn để tự động tóm tắt từ trường "Nội dung bài viết"')
+                            ->hintAction(
+                                Forms\Components\Actions\Action::make('generateSummary')
+                                    ->label('Tóm tắt')
+                                    ->icon('heroicon-m-sparkles')
+                                    ->tooltip('Tóm tắt bằng AI')
+                                    ->color('success')
+                                    ->requiresConfirmation(false)
+                                    ->action(function ($state, $set, $get) {
+                                        $content = $state;
+
+                                        if (empty($content)) {
+                                            static::sendErrorNotification('Nội dung bài viết trống.')->send();
+                                            return;
+                                        }
+
+                                        $soKyTu = (int) $get('so_ky_tu') ?: 100;
+                                        $summary = static::generateSummary($content, $soKyTu);
+                                        $set('sumary', $summary);
+                                    })
+                            )
+                            ->columnSpan(8),
+
+                        Forms\Components\TextInput::make('so_ky_tu')
+                            ->numeric()
+                            ->default(100)
+                            ->minValue(10)
+                            ->maxValue(1000)
+                            ->suffix('ký tự')
+                            ->label('Số lượng ký tự tóm tắt ')
+                            ->columnSpan(2)
+                            ->dehydrated(false) // không lưu vào DB
+                            ->afterStateHydrated(function ($component, $state) {
+                                // Nếu mở form edit mà không có dữ liệu -> gán mặc định 100
+                                if (blank($state)) {
+                                    $component->state(100);
                                 }
-                                $summary = static::generateSummary($content);
-                                $set('sumary', $summary);
-                            })
-                            ->extraAttributes(['class' => 'text-sm'])
-                    ),
+                            }),
+                    ])
+                    ->columns(10),
+
 
                 Forms\Components\Textarea::make('sumary')
                     ->label('Tóm tắt nội dung')
                     ->maxLength(1000)
-                    ->rows(6),
+                    ->rows(6)->columnSpanFull(),
+
 
                 Forms\Components\Select::make('id_user')
                     ->label('Người chia sẻ')
                     ->relationship('user', 'name')
                     ->searchable()
-                    ->default(auth()->id()),
+                    ->default(auth()->id()), // chiếm 80% (4/5)
+
 
                 Forms\Components\DateTimePicker::make('time')
                     ->label('Thời gian ghi nhận')
                     ->seconds(false)
                     ->default(now()),
+
             ]);
     }
 
@@ -128,16 +188,16 @@ class TongHopTinhHinhResource extends Resource
                 // Nội dung tóm tắt
                 Tables\Columns\TextColumn::make('link')
                     ->label('Link bài viết')
-                    ->url(fn ($record) => $record->link, true) // click được, mở tab mới
+                    ->url(fn($record) => $record->link, true) // click được, mở tab mới
                     ->limit(50) // cắt ngắn link cho gọn
                     ->wrap()
-                    ->description(fn ($record) => $record->sumary ?? '') // tóm tắt hiển thị dưới
+                    ->description(fn($record) => $record->sumary ?? '') // tóm tắt hiển thị dưới
                     ->sortable(),
 
                 // Mục tiêu (liên kết từ bảng muc_tieus)
                 Tables\Columns\TextColumn::make('muctieu.name')
                     ->label('Mục tiêu')
-                    ->url(fn ($record) => $record->muctieu?->link, true) // link sang bài gốc
+                    ->url(fn($record) => $record->muctieu?->link, true) // link sang bài gốc
                     ->color('primary')
                     ->wrap(),
 
@@ -150,8 +210,7 @@ class TongHopTinhHinhResource extends Resource
                     ->action(
                         Tables\Actions\Action::make('Xem ảnh')
                             ->modalHeading('Xem ảnh')
-                            ->modalContent(fn ($record) =>
-                            view('filament.modals.preview-image', [
+                            ->modalContent(fn($record) => view('filament.modals.preview-image', [
                                 'url' => Storage::disk('public')->url($record->pic)
                             ])
                             )
@@ -172,7 +231,7 @@ class TongHopTinhHinhResource extends Resource
                 // Phân loại
                 Tables\Columns\TextColumn::make('phanloai')
                     ->label('Phân loại')
-                    ->formatStateUsing(fn ($state) => match ($state) {
+                    ->formatStateUsing(fn($state) => match ($state) {
                         1 => 'ANQG trong địa bàn',
                         2 => 'ANQG ngoài địa bàn',
                         3 => 'TTXH trong địa bàn',
@@ -181,7 +240,7 @@ class TongHopTinhHinhResource extends Resource
                         default => 'Chưa phân loại',
                     })
                     ->badge() // hiển thị badge màu đẹp
-                    ->color(fn ($state) => match ($state) {
+                    ->color(fn($state) => match ($state) {
                         1, 2 => 'danger',
                         3, 4 => 'warning',
                         5 => 'info',
@@ -233,7 +292,7 @@ class TongHopTinhHinhResource extends Resource
             ->send();
     }
 
-    public static function generateSummary($content): string
+    public static function generateSummary($content, $soKyTu): string
     {
         // Get API config
         $apiConfig = static::getApiConfiguration();
@@ -242,7 +301,8 @@ class TongHopTinhHinhResource extends Resource
             static::sendErrorNotification($apiConfig['message']);
         }
         // Build AI prompt
-        $messages = static::buildAIPrompt($content, $apiConfig['promptContent']);
+        $messages = static::buildAIPrompt($content, $apiConfig['promptContent'], $soKyTu);
+
         try {
             $client = OpenAI::client($apiConfig['key']);
             $response = $client->chat()->create([
@@ -261,6 +321,7 @@ class TongHopTinhHinhResource extends Resource
         return $summary;
 
     }
+
     public static function getApiConfiguration(): array
     {
         $settings = GeneralSetting::first();
@@ -275,8 +336,10 @@ class TongHopTinhHinhResource extends Resource
             'message' => empty($settings) ? 'Cấu hình hệ thống không tồn tại' : 'Cấu hình API không hợp lệ'
         ];
     }
-    public static function buildAIPrompt(?string $content, string $prompt): array
+
+    public static function buildAIPrompt(?string $content, string $prompt, int $soKyTu): array
     {
+        $prompt = str_replace('{so_ky_tu}', $soKyTu, $prompt);
         $messages = [
             [
                 'role' => 'system',
@@ -290,10 +353,6 @@ class TongHopTinhHinhResource extends Resource
 
         return $messages;
     }
-
-
-
-
 
 
 }
