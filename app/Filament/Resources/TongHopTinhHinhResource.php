@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TongHopTinhHinhResource\Pages;
-use App\Filament\Resources\TongHopTinhHinhResource\RelationManagers;
 use App\Models\TongHopTinhHinh;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -11,11 +10,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
-use Filament\Forms\Components\FileUpload;
 use Joaopaulolndev\FilamentGeneralSettings\Models\GeneralSetting;
 use OpenAI;
 class TongHopTinhHinhResource extends Resource
@@ -77,8 +72,8 @@ class TongHopTinhHinhResource extends Resource
                     ->directory(fn () => 'uploads/tinhhinh/' . now()->format('Ymd'))
                     ->maxSize(20480)
                     ->nullable()
-                    ->optimize('webp')
-                    ->resize(80),
+                    ->optimize('webp'),
+
 
                 Forms\Components\Textarea::make('contents_text')
                     ->label('Nội dung bài viết')
@@ -111,7 +106,8 @@ class TongHopTinhHinhResource extends Resource
                 Forms\Components\Select::make('id_user')
                     ->label('Người chia sẻ')
                     ->relationship('user', 'name')
-                    ->searchable(),
+                    ->searchable()
+                    ->default(auth()->id()),
 
                 Forms\Components\DateTimePicker::make('time')
                     ->label('Thời gian ghi nhận')
@@ -237,8 +233,6 @@ class TongHopTinhHinhResource extends Resource
             ->send();
     }
 
-
-
     public static function generateSummary($content): string
     {
         // Get API config
@@ -247,7 +241,6 @@ class TongHopTinhHinhResource extends Resource
         if (!$apiConfig['valid']) {
             static::sendErrorNotification($apiConfig['message']);
         }
-
         // Build AI prompt
         $messages = static::buildAIPrompt($content, $apiConfig['promptContent']);
         try {
@@ -263,10 +256,8 @@ class TongHopTinhHinhResource extends Resource
         } catch (\Exception $e) {
             return 'Lỗi trong quá trình tóm tắt: ' . $e->getMessage();
         }
-
         // Thông báo thành công
         static::sendSuccessNotification('Tóm tắt nội dung thành công!');
-
         return $summary;
 
     }
