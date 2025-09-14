@@ -101,7 +101,7 @@ class TongHopTinhHinhResource extends Resource
                                         $set('sumary', $summary);
                                     })
                             )
-                            ->columnSpan(8),
+                            ->columnSpan(4),
 
                         Forms\Components\TextInput::make('so_ky_tu')
                             ->numeric()
@@ -118,15 +118,12 @@ class TongHopTinhHinhResource extends Resource
                                     $component->state(100);
                                 }
                             }),
-                    ])
-                    ->columns(10),
-
-
-                Forms\Components\Textarea::make('sumary')
-                    ->label('Tóm tắt nội dung')
-                    ->maxLength(1000)
-                    ->rows(6)->columnSpanFull(),
-
+                        Forms\Components\Textarea::make('sumary')
+                            ->label('Tóm tắt nội dung')
+                            ->maxLength(1000)
+                            ->rows(6)
+                            ->columnSpan(4)
+                    ]),
 
                 Forms\Components\Select::make('id_user')
                     ->label('Người chia sẻ')

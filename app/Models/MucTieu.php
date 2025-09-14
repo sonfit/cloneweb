@@ -14,6 +14,7 @@ class MucTieu extends Model
         'link',
         'time_create',
         'time_crawl',
+        'ghi_chu',
     ];
 
     protected $casts = [
