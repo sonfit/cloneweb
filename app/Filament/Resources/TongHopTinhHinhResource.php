@@ -80,7 +80,7 @@ class TongHopTinhHinhResource extends Resource
                         Forms\Components\Textarea::make('contents_text')
                             ->label('Nội dung bài viết')
                             ->rows(6)
-                            ->hint('Nhấn để tự động tóm tắt từ trường "Nội dung bài viết"')
+                            ->hint('Nhấn để tự động tóm tắt')
                             ->hintAction(
                                 Forms\Components\Actions\Action::make('generateSummary')
                                     ->label('Tóm tắt')
