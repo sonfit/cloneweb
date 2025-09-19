@@ -159,14 +159,15 @@ class ThuTinResource extends Resource
                         default => 'gray',
                     }),
 
-                Tables\Columns\BadgeColumn::make('level')
+                Tables\Columns\TextColumn::make('level')
                     ->label('Mức độ')
+                    ->badge()
                     ->colors([
-                        'success' => 1,
+                        'gray' => 1,
                         'info'    => 2,
-                        'warning' => 3,
-                        'danger'  => 4,
-                        'gray'    => 5,
+                        'success' => 3,
+                        'warning'  => 4,
+                        'danger'    => 5,
                     ])
                     ->formatStateUsing(fn ($state) => match ($state) {
                         1 => '⭐ - Rất thấp',
