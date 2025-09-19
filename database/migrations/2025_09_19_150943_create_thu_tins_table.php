@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tong_hop_tinh_hinhs', function (Blueprint $table) {
+        Schema::create('thu_tins', function (Blueprint $table) {
             $table->id();
 
-            $table->unsignedBigInteger('id_muctieu')
+            $table->unsignedBigInteger('id_bot')
                 ->nullable()
-                ->comment('ID mục tiêu, có thể để trống nếu chưa xác định');
+                ->comment('ID Bot, có thể để trống nếu chưa xác định');
 
             $table->unsignedBigInteger('id_user')
                 ->nullable()
@@ -33,13 +33,13 @@ return new class extends Migration
                 ->nullable()
                 ->comment('Ảnh chụp màn hình');
 
-            $table->string('sumary', 2000)
-                ->nullable()
-                ->comment('Tóm tắt nội dung bài viết (AI hỗ trợ, có thể sửa bằng tay)');
-
             $table->unsignedTinyInteger('phanloai')
                 ->nullable()
                 ->comment('Phân loại tin tức: ANQG/TTXH...');
+
+            $table->tinyInteger('level')
+                ->default(1)
+                ->comment('Mưc độ quan trọng của thu tin, từ 1-5. 5 là lớn nhất');
 
             $table->timestamp('time')->nullable()->comment('Thời gian ghi nhận chia sẻ');
 
@@ -50,9 +50,9 @@ return new class extends Migration
                 ->on('users')
                 ->nullOnDelete();
 
-            $table->foreign('id_muctieu')
+            $table->foreign('id_bot')
                 ->references('id')
-                ->on('muc_tieus')
+                ->on('bots')
                 ->nullOnDelete();
         });
     }
@@ -62,6 +62,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tong_hop_tinh_hinhs');
+        Schema::dropIfExists('thu_tins');
     }
 };

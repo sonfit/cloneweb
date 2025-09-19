@@ -129,7 +129,7 @@ class TongHopTinhHinhResource extends Resource
                     ->label('Người chia sẻ')
                     ->relationship('user', 'name')
                     ->searchable()
-                    ->default(auth()->id()), // chiếm 80% (4/5)
+                    ->default(auth()->id()),
 
 
                 Forms\Components\DateTimePicker::make('time')
@@ -147,7 +147,7 @@ class TongHopTinhHinhResource extends Resource
                 // STT
                 Tables\Columns\TextColumn::make('stt')
                     ->label('STT')
-                    ->rowIndex(), // Tự động đánh số theo thứ tự hiển thị
+                    ->rowIndex(),
 
                 // Nội dung tóm tắt
                 Tables\Columns\TextColumn::make('link')
