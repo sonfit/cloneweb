@@ -40,14 +40,7 @@ class MucTieuResource extends Resource
 
                 Forms\Components\Radio::make('type')
                     ->label('Phân loại')
-                    ->options([
-                        1 => 'Facebook cá nhân',
-                        2 => 'Fanpage',
-                        3 => 'Group',
-                        4 => 'TikTok',
-                        5 => 'Channel Telegram',
-                        6 => 'Group Telegram',
-                    ])
+                    ->options(__('options.sources'))
                     ->default(1)
                     ->required()
                     ->columns(2)
@@ -84,20 +77,7 @@ class MucTieuResource extends Resource
                 Tables\Columns\TextColumn::make('type')
                     ->label('Phân loại')
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => match ($state) {
-                        1 => 'Facebook cá nhân',
-                        2 => 'Fanpage',
-                        3 => 'Group',
-                        4 => 'TikTok',
-                        5 => 'Channel Telegram',
-                        6 => 'Group Telegram',
-                        default => 'Khác',
-                    }),
-
-//                Tables\Columns\TextColumn::make('link')
-//                    ->label('Link')
-//                    ->url(fn ($record) => $record->link, true)
-//                    ->limit(50),
+                    ->formatStateUsing(fn($state) => trans('options.sources.' . $state, [], 'Chưa xác định')),
 
                 Tables\Columns\TextColumn::make('time_create')
                     ->label('Tạo trên hệ thống')

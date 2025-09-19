@@ -40,27 +40,12 @@ class TongHopTinhHinhResource extends Resource
                     ->preload()
                     ->nullable()
                     ->getOptionLabelFromRecordUsing(function ($record) {
-                        $map = [
-                            1 => 'Facebook cá nhân',
-                            2 => 'Fanpage',
-                            3 => 'Group',
-                            4 => 'TikTok',
-                            5 => 'Channel Telegram',
-                            6 => 'Group Telegram'
-                        ];
-
-                        return ($map[$record->type] . ' - ' . $record->name ?? 'Không rõ');
+                        return (__('options.sources.' . $record->type, [], 'Không rõ') . ' - ' . $record->name ?? 'Không rõ');
                     }),
 
                 Forms\Components\Radio::make('phanloai')
                     ->label('Phân loại tin tức')
-                    ->options([
-                        1 => 'ANQG trong địa bàn',
-                        2 => 'ANQG ngoài địa bàn',
-                        3 => 'TTXH trong địa bàn',
-                        4 => 'TTXH ngoài địa bàn',
-                        5 => 'Dư luận xã hội liên quan CTP',
-                    ])
+                    ->options(__('options.phanloai'))
                     ->default(1)
                     ->required()
                     ->columns(2)
@@ -195,14 +180,7 @@ class TongHopTinhHinhResource extends Resource
                 // Phân loại
                 Tables\Columns\TextColumn::make('phanloai')
                     ->label('Phân loại')
-                    ->formatStateUsing(fn($state) => match ($state) {
-                        1 => 'ANQG trong địa bàn',
-                        2 => 'ANQG ngoài địa bàn',
-                        3 => 'TTXH trong địa bàn',
-                        4 => 'TTXH ngoài địa bàn',
-                        5 => 'Dư luận xã hội liên quan CTP',
-                        default => 'Chưa phân loại',
-                    })
+                    ->formatStateUsing(fn($state) => trans('options.phanloai.' . $state, [], 'Chưa phân loại'))
                     ->badge() // hiển thị badge màu đẹp
                     ->color(fn($state) => match ($state) {
                         1, 2 => 'danger',

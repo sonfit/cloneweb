@@ -40,15 +40,10 @@ class ThuTinResource extends Resource
                     ->preload()
                     ->nullable(),
 
+
                 Forms\Components\Radio::make('phanloai')
                     ->label('Phân loại tin tức')
-                    ->options([
-                        1 => 'ANQG trong địa bàn',
-                        2 => 'ANQG ngoài địa bàn',
-                        3 => 'TTXH trong địa bàn',
-                        4 => 'TTXH ngoài địa bàn',
-                        5 => 'Dư luận xã hội liên quan CTP',
-                    ])
+                    ->options(__('options.phanloai'))
                     ->default(1)
                     ->required()
                     ->columns(2)
@@ -70,13 +65,7 @@ class ThuTinResource extends Resource
 
                 Forms\Components\Radio::make('level')
                     ->label('Mức độ quan trọng')
-                    ->options([
-                        1 => '⭐ - Rất thấp',
-                        2 => '⭐⭐ - Thấp',
-                        3 => '⭐⭐⭐ - Trung bình',
-                        4 => '⭐⭐⭐⭐ - Cao',
-                        5 => '⭐⭐⭐⭐⭐ - Rất cao',
-                    ])
+                    ->options(__('options.levels'))
                     ->default(1)
                     ->extraAttributes(['style' => 'margin-left: 50px;'])
                     ->required(),
@@ -143,15 +132,8 @@ class ThuTinResource extends Resource
                 // Phân loại
                 Tables\Columns\TextColumn::make('phanloai')
                     ->label('Phân loại')
-                    ->formatStateUsing(fn($state) => match ($state) {
-                        1 => 'ANQG trong địa bàn',
-                        2 => 'ANQG ngoài địa bàn',
-                        3 => 'TTXH trong địa bàn',
-                        4 => 'TTXH ngoài địa bàn',
-                        5 => 'Dư luận xã hội liên quan CTP',
-                        default => 'Chưa phân loại',
-                    })
-                    ->badge() // hiển thị badge màu đẹp
+                    ->formatStateUsing(fn($state) => trans('options.phanloai.' . $state, [], 'Chưa phân loại'))
+                    ->badge()
                     ->color(fn($state) => match ($state) {
                         1, 2 => 'danger',
                         3, 4 => 'warning',
@@ -169,14 +151,7 @@ class ThuTinResource extends Resource
                         'warning'  => 4,
                         'danger'    => 5,
                     ])
-                    ->formatStateUsing(fn ($state) => match ($state) {
-                        1 => '⭐ - Rất thấp',
-                        2 => '⭐⭐ - Thấp',
-                        3 => '⭐⭐⭐ - Trung bình',
-                        4 => '⭐⭐⭐⭐ - Cao',
-                        5 => '⭐⭐⭐⭐⭐ - Rất cao',
-                        default => $state,
-                    })
+                    ->formatStateUsing(fn($state) => trans('options.levels.' . $state, [], 'Chưa xác định'))
                     ->sortable(),
             ])
             ->filters([
