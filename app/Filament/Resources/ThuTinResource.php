@@ -66,7 +66,20 @@ class ThuTinResource extends Resource
 
                 Forms\Components\Textarea::make('contents_text')
                     ->label('Nội dung bài viết')
-                    ->rows(6)->columnSpanFull(),
+                    ->rows(7),
+
+                Forms\Components\Radio::make('level')
+                    ->label('Mức độ quan trọng')
+                    ->options([
+                        1 => '⭐ - Rất thấp',
+                        2 => '⭐⭐ - Thấp',
+                        3 => '⭐⭐⭐ - Trung bình',
+                        4 => '⭐⭐⭐⭐ - Cao',
+                        5 => '⭐⭐⭐⭐⭐ - Rất cao',
+                    ])
+                    ->default(1)
+                    ->extraAttributes(['style' => 'margin-left: 50px;'])
+                    ->required(),
 
                 Forms\Components\Select::make('id_user')
                     ->label('Người chia sẻ')
@@ -145,6 +158,25 @@ class ThuTinResource extends Resource
                         5 => 'info',
                         default => 'gray',
                     }),
+
+                Tables\Columns\BadgeColumn::make('level')
+                    ->label('Mức độ')
+                    ->colors([
+                        'success' => 1,
+                        'info'    => 2,
+                        'warning' => 3,
+                        'danger'  => 4,
+                        'gray'    => 5,
+                    ])
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        1 => '⭐ - Rất thấp',
+                        2 => '⭐⭐ - Thấp',
+                        3 => '⭐⭐⭐ - Trung bình',
+                        4 => '⭐⭐⭐⭐ - Cao',
+                        5 => '⭐⭐⭐⭐⭐ - Rất cao',
+                        default => $state,
+                    })
+                    ->sortable(),
             ])
             ->filters([
                 //
