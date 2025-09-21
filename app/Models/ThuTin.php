@@ -14,7 +14,12 @@ class ThuTin extends Model
         'level',
         'id_bot',
         'id_user',
+        'id_muctieu',
         'time',
+    ];
+
+    protected $casts = [
+        'pic' => 'array',
     ];
 
     public function user()
@@ -25,5 +30,9 @@ class ThuTin extends Model
     public function bot()
     {
         return $this->belongsTo(Bot::class, 'id_bot');
+    }
+    public function mucTieu()
+    {
+        return $this->belongsTo(MucTieu::class, 'id_muctieu');
     }
 }

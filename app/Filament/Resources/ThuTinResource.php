@@ -13,7 +13,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Str;
 class ThuTinResource extends Resource
 {
     protected static ?string $model = ThuTin::class;
@@ -33,12 +33,15 @@ class ThuTinResource extends Resource
                     ->required()
                     ->unique(ignoreRecord: true),
 
-                Forms\Components\Select::make('id_bot')
-                    ->label('Bot')
-                    ->relationship('Bot', 'ten_bot')
+                Forms\Components\Select::make('id_muctieu')
+                    ->label('Mục tiêu')
+                    ->relationship('mucTieu', 'name')
                     ->searchable()
                     ->preload()
-                    ->nullable(),
+                    ->nullable()
+                    ->getOptionLabelFromRecordUsing(function ($record) {
+                        return (__('options.sources.' . $record->type, [], 'Không rõ') . ' - ' . $record->name ?? 'Không rõ');
+                    }),
 
 
                 Forms\Components\Radio::make('phanloai')
@@ -53,10 +56,19 @@ class ThuTinResource extends Resource
                     ->label('Ảnh chụp màn hình')
                     ->image()
                     ->disk('public')
-                    ->directory(fn() => 'uploads/tinhhinh/' . now()->format('Ymd'))
+                    ->directory(fn() => 'uploads/thutin/' . now()->format('Ymd'))
                     ->maxSize(20480)
                     ->nullable()
-                    ->optimize('webp'),
+                    ->multiple()
+                    ->acceptedFileTypes([
+                        'image/jpeg',
+                        'image/png',
+                        'image/webp',
+                        'video/mp4',
+                        'video/avi',
+                        'video/mpeg',
+                        'video/quicktime',
+                    ]),
 
 
                 Forms\Components\Textarea::make('contents_text')
@@ -96,38 +108,45 @@ class ThuTinResource extends Resource
                     ->url(fn($record) => $record->link, true)
                     ->limit(50) // cắt ngắn link cho gọn
                     ->wrap()
+                    ->description(fn($record) => $record->contents_text ? Str::limit($record->contents_text, 100) : '')
+                    ->tooltip(fn($record) => $record->contents_text ?? '')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('bot.ten_bot')
-                    ->label('Bot')
+                Tables\Columns\TextColumn::make('muctieu.name')
+                    ->label('Mục tiêu')
+                    ->url(fn($record) => $record->muctieu?->link, true) // link sang bài gốc
                     ->color('primary')
                     ->wrap(),
 
                 Tables\Columns\ImageColumn::make('pic')
                     ->label('Hình ảnh')
                     ->disk('public')
-                    ->height(80)
-                    ->width(120)
+                    ->circular()
+                    ->stacked()
+                    ->limit(3)
+                    ->limitedRemainingText()
+                    ->getStateUsing(function ($record) {
+                        return collect($record->pic)->map(function ($p) {
+                            $url = Storage::disk('public')->url($p);
+                            $ext = strtolower(pathinfo($url, PATHINFO_EXTENSION));
+
+                            if (in_array($ext, ['mp4','webm','ogg','mov','avi'])) {
+                                // Nếu là video -> dùng ảnh placeholder
+                                return asset('video-placeholder.jpg');
+                            }
+                            return $url;
+                        })->toArray();
+                    })
                     ->action(
                         Tables\Actions\Action::make('Xem ảnh')
-                            ->modalHeading('Xem ảnh')
-                            ->modalContent(fn($record) => view('filament.modals.preview-image', [
-                                'url' => Storage::disk('public')->url($record->pic)
-                            ])
-                            )
+                            ->modalHeading('Xem media')
+                            ->modalContent(fn($record) => view('filament.modals.preview-media', [
+                                'urls' => collect($record->pic)->map(fn($p) => Storage::disk('public')->url($p))->toArray()
+                            ]))
                             ->modalSubmitAction(false)
                     ),
 
-                // Người ghi nhận (user)
-                Tables\Columns\TextColumn::make('user.name')
-                    ->label('Người ghi nhận')
-                    ->sortable(),
 
-                // Thời gian
-                Tables\Columns\TextColumn::make('time')
-                    ->label('Time')
-                    ->dateTime('d/m/Y')
-                    ->sortable(),
 
                 // Phân loại
                 Tables\Columns\TextColumn::make('phanloai')
@@ -152,6 +171,17 @@ class ThuTinResource extends Resource
                         'danger'    => 5,
                     ])
                     ->formatStateUsing(fn($state) => trans('options.levels.' . $state, [], 'Chưa xác định'))
+                    ->sortable(),
+
+                // Người ghi nhận (user)
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Người ghi nhận')
+                    ->sortable(),
+
+                // Thời gian
+                Tables\Columns\TextColumn::make('time')
+                    ->label('Time')
+                    ->dateTime('d/m/Y')
                     ->sortable(),
             ])
             ->filters([
