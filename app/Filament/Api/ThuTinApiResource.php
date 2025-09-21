@@ -187,7 +187,7 @@ class ThuTinApiResource
 
         try {
             $request->validate([
-                'file' => 'required|mimes:jpeg,png,gif,bmp,webp,mp4,mov,avi,mkv,webm|max:51200'
+                'file' => 'required|mimes:jpeg,png,gif,bmp,webp,mp4,mov,avi,mkv,webm|max:512000'
                 // ảnh ≤ 20MB, video cho phép lớn hơn (ở đây set max 50MB)
             ]);
 

@@ -57,7 +57,7 @@ class ThuTinResource extends Resource
                     ->image()
                     ->disk('public')
                     ->directory(fn() => 'uploads/thutin/' . now()->format('Ymd'))
-                    ->maxSize(20480)
+                    ->maxSize(512000)
                     ->nullable()
                     ->multiple()
                     ->acceptedFileTypes([
