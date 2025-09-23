@@ -72,7 +72,7 @@ class MucTieuResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên hiển thị')
                     ->url(fn ($record) => $record->link, true)
-                    ->searchable()
+                    ->searchable(['name', 'link'])
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('type')
@@ -80,14 +80,18 @@ class MucTieuResource extends Resource
                     ->sortable()
                     ->formatStateUsing(fn($state) => trans('options.sources.' . $state, [], 'Chưa xác định')),
 
-                Tables\Columns\TextColumn::make('time_create')
-                    ->label('Tạo trên hệ thống')
-                    ->dateTime('d/m/Y H:i'),
+
 
                 Tables\Columns\TextColumn::make('time_crawl')
                     ->label('Lần bot truy cập')
                     ->dateTime('H:i:s d/m/Y')
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('time_create')
+                    ->label('Tạo trên hệ thống')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo bản ghi')
