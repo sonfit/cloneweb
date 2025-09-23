@@ -30,8 +30,8 @@ class ThuTinApiResource
     {
         try {
             $query = ThuTin::query();
-            if ($request->has('link')) {
-                $link = $request->query('link');
+            if ($request->has('check_link')) {
+                $link = $request->query('check_link');
                 $exists = $query->where('link', $link)->first();
 
                 if ($exists) {
