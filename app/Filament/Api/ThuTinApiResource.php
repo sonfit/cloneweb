@@ -131,13 +131,66 @@ class ThuTinApiResource
 
 
             // update nếu link đã tồn tại, nếu không thì tạo mới
-            $thuTin = ThuTin::updateOrCreate(
-                ['link' => $data['link']], // điều kiện tìm
-                $data  // dữ liệu để update hoặc create
-            );
+//            $thuTin = ThuTin::updateOrCreate(
+//                ['link' => $data['link']], // điều kiện tìm
+//                $data  // dữ liệu để update hoặc create
+//            );
+//            return response()->json($thuTin, 201);
 
 
-            return response()->json($thuTin, 201);
+
+            // --- Chuẩn hoá contents_text để so sánh (loại thẻ HTML, trim, lowercase) ---
+            $incomingContent = isset($data['contents_text']) ? trim(strip_tags($data['contents_text'])) : null;
+            $normalizedIncoming = $incomingContent ? mb_strtolower($incomingContent) : null;
+
+            // 1) Kiểm tra link đã tồn tại chưa
+            $existingByLink = ThuTin::where('link', $data['link'])->first();
+
+            if ($existingByLink) {
+                // Nếu có content incoming và giống với content hiện tại => bỏ qua
+                $existingContent = $existingByLink->contents_text ? trim(strip_tags($existingByLink->contents_text)) : null;
+                $normalizedExisting = $existingContent ? mb_strtolower($existingContent) : null;
+
+                if ($normalizedIncoming && $normalizedIncoming === $normalizedExisting) {
+                    // Bỏ qua (link + nội dung trùng)
+                    return response()->json([
+                        'message' => 'Link đã tồn tại và nội dung trùng, bỏ qua.',
+                        'data' => $existingByLink,
+                    ], 200);
+                }
+
+                // Nếu nội dung khác (hoặc incoming content rỗng) -> cập nhật bản ghi hiện có
+                $existingByLink->update($data);
+                return response()->json([
+                    'message' => 'Link đã tồn tại, nội dung khác nên đã cập nhật.',
+                    'data' => $existingByLink,
+                ], 200);
+            } else {
+                // Link mới -> kiểm tra nội dung có tồn tại ở bản ghi khác không
+                if ($normalizedIncoming) {
+                    // So sánh case-insensitive, trim. Dùng LOWER(TRIM(...)) để match DB
+                    $existingByContent = ThuTin::whereRaw('LOWER(TRIM(contents_text)) = ?', [$normalizedIncoming])->first();
+
+                    if ($existingByContent) {
+                        // Có bản ghi khác cùng nội dung -> bỏ qua (không tạo bản ghi mới)
+                        return response()->json([
+                            'message' => 'Nội dung đã tồn tại ở một link khác, bỏ qua.',
+                            'data' => $existingByContent,
+                        ], 200);
+                    }
+                }
+
+                // Không trùng nội dung -> tạo mới
+                $thuTin = ThuTin::create($data);
+                return response()->json($thuTin, 201);
+            }
+
+
+
+
+
+
+
 
         } catch (Throwable $e) {
             return $this->errorResponse($e);
