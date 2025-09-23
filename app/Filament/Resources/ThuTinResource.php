@@ -176,8 +176,8 @@ class ThuTinResource extends Resource
                     ->sortable(),
 
                 // Người ghi nhận (user)
-                Tables\Columns\TextColumn::make('user.name')
-                    ->label('Người ghi nhận')
+                Tables\Columns\TextColumn::make('bot.ten_bot')
+                    ->label('Bot')
                     ->sortable()
                     ->searchable(),
 
