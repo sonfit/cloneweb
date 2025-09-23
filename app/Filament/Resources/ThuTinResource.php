@@ -118,7 +118,8 @@ class ThuTinResource extends Resource
                     ->label('Mục tiêu')
                     ->url(fn($record) => $record->muctieu?->link, true) // link sang bài gốc
                     ->color('primary')
-                    ->wrap(),
+                    ->wrap()
+                    ->searchable(),
 
                 Tables\Columns\ImageColumn::make('pic')
                     ->label('Hình ảnh')
@@ -155,6 +156,7 @@ class ThuTinResource extends Resource
                     ->label('Phân loại')
                     ->formatStateUsing(fn($state) => trans('options.phanloai.' . $state, [], 'Chưa phân loại'))
                     ->badge()
+                    ->searchable()
                     ->color(fn($state) => match ($state) {
                         1, 2 => 'danger',
                         3, 4 => 'warning',
@@ -173,7 +175,8 @@ class ThuTinResource extends Resource
                         'danger'    => 5,
                     ])
                     ->formatStateUsing(fn($state) => trans('options.levels.' . $state, [], 'Chưa xác định'))
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
 
                 // Người ghi nhận (user)
                 Tables\Columns\TextColumn::make('bot.ten_bot')
