@@ -110,7 +110,8 @@ class ThuTinResource extends Resource
                     ->wrap()
                     ->description(fn($record) => $record->contents_text ? Str::limit($record->contents_text, 100) : '')
                     ->tooltip(fn($record) => $record->contents_text ?? '')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(['link', 'contents_text']),
 
                 Tables\Columns\TextColumn::make('muctieu.name')
                     ->label('Mục tiêu')
@@ -176,12 +177,13 @@ class ThuTinResource extends Resource
                 // Người ghi nhận (user)
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Người ghi nhận')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
 
                 // Thời gian
                 Tables\Columns\TextColumn::make('time')
                     ->label('Time')
-                    ->dateTime('d/m/Y')
+                    ->dateTime('H:i:s d/m/Y')
                     ->sortable(),
             ])
             ->filters([

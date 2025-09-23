@@ -2,8 +2,10 @@
 
 namespace App\Filament\Api;
 
+use App\Models\Bot;
 use App\Models\MucTieu;
 use App\Models\ThuTin;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -24,10 +26,27 @@ class ThuTinApiResource
         Route::delete('thu-tins/{thuTin}', [self::class, 'destroy']);
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try {
-            return response()->json(ThuTin::latest()->paginate(20));
+            $query = ThuTin::query();
+            if ($request->has('link')) {
+                $link = $request->query('link');
+                $exists = $query->where('link', $link)->first();
+
+                if ($exists) {
+                    return response()->json([
+                        'data' => [$exists],
+                    ]);
+                }
+
+                return response()->json([
+                    'data' => []
+                ]);
+            }
+            return response()->json(
+                $query->latest()->paginate(20)
+            );
         } catch (Throwable $e) {
             return $this->errorResponse($e);
         }
@@ -35,6 +54,8 @@ class ThuTinApiResource
 
     public function store(Request $request)
     {
+
+
         try {
             $data = $request->validate([
                 'id_bot'        => 'nullable|exists:bots,id',
@@ -77,6 +98,7 @@ class ThuTinApiResource
                 [
                     'name' => $data['ten_muc_tieu'],
                     'type' => 6,
+                    'time_crawl' => $data['time'],
                 ]
             );
 
@@ -91,6 +113,7 @@ class ThuTinApiResource
                 ['link' => $data['link']], // điều kiện tìm
                 $data  // dữ liệu để update hoặc create
             );
+
 
             return response()->json($thuTin, 201);
 
@@ -240,6 +263,64 @@ class ThuTinApiResource
                 'error'   => $e->getMessage(),
                 'file'    => $request->hasFile('file') ? $request->file('file')->getClientOriginalName() : 'No file'
             ], 500);
+        }
+    }
+
+    public function getBot(Request $request)
+    {
+        try {
+            $query = Bot::query();
+            $query->with(['mucTieus:id,link,time_crawl']);
+
+            if ($request->has('id_bot')) {
+                $id_bot = $request->query('id_bot');
+                $bot = $query->where('id', $id_bot)->first();
+                if ($bot) {
+                    return response()->json([
+                        'data' => [
+                            [
+                                'id' => $bot->id,
+                                'ten_bot' => $bot->ten_bot,
+                                'muc_tieus' => $bot->mucTieus->map(fn($mt) => [
+                                    'id' => $mt->id,
+                                    'link' => $mt->link,
+                                    'time_crawl' => $mt->time_crawl
+                                        ? Carbon::parse($mt->time_crawl)->format('Y-m-d H:i:s')
+                                        : now()->subDay()->format('Y-m-d H:i:s'),
+                                ]),
+                            ]
+                        ],
+                    ]);
+                }
+
+                return response()->json([
+                    'data' => []
+                ]);
+            }
+
+            // Nếu không có id_bot, trả về danh sách với pagination
+            $bots = $query->latest()->paginate(20);
+
+            // Tùy chỉnh dữ liệu trả về
+            $bots->getCollection()->transform(function($bot) {
+                return [
+                    'id' => $bot->id,
+                    'ten_bot' => $bot->ten_bot,
+                    'muc_tieus' => $bot->mucTieus->map(fn($mt) => [
+                        'id' => $mt->id,
+                        'name' => $mt->name,
+                        'link' => $mt->link,
+                        'time_crawl' => $mt->time_crawl
+                            ? Carbon::parse($mt->time_crawl)->format('Y-m-d H:i:s')
+                            : now()->subDay()->format('Y-m-d H:i:s'),
+                    ]),
+                ];
+            });
+
+            return response()->json($bots);
+
+        } catch (Throwable $e) {
+            return $this->errorResponse($e);
         }
     }
 

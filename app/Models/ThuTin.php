@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class ThuTin extends Model
 {
@@ -21,6 +22,29 @@ class ThuTin extends Model
     protected $casts = [
         'pic' => 'array',
     ];
+
+
+    protected static function booted()
+    {
+        static::deleting(function ($record) {
+            if ($record->pic) {
+                Storage::disk('public')->delete($record->pic); // pic là array => ok
+            }
+        });
+
+        static::updating(function ($record) {
+            if ($record->isDirty('pic')) {
+                $oldPic = json_decode($record->getOriginal('pic'), true); // convert JSON -> array
+                $newPic = $record->pic ?? [];
+
+                // Xóa những file cũ không còn trong danh sách mới
+                $toDelete = array_diff($oldPic ?? [], $newPic);
+                if (!empty($toDelete)) {
+                    Storage::disk('public')->delete($toDelete);
+                }
+            }
+        });
+    }
 
     public function user()
     {

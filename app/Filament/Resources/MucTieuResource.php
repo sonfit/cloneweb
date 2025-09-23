@@ -85,12 +85,12 @@ class MucTieuResource extends Resource
 
                 Tables\Columns\TextColumn::make('time_crawl')
                     ->label('Lần bot truy cập')
-                    ->dateTime('d/m/Y H:i')
+                    ->dateTime('H:i:s d/m/Y')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo bản ghi')
-                    ->dateTime('d/m/Y H:i')
+                    ->dateTime('H:i:s d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

@@ -42,6 +42,17 @@ class BotResource extends Resource
                     ->maxLength(150)
                     ->required(),
 
+                Forms\Components\Select::make('mucTieus')
+                    ->multiple()
+                    ->label('Mục tiêu')
+                    ->relationship('mucTieus', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->nullable()
+                    ->getOptionLabelFromRecordUsing(function ($record) {
+                        return (__('options.sources.' . $record->type, [], 'Không rõ') . ' - ' . $record->name ?? 'Không rõ');
+                    }),
+
                 Forms\Components\Textarea::make('ghi_chu')
                     ->label('Ghi chú')
                     ->maxLength(1000)
@@ -67,10 +78,22 @@ class BotResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('lenh_bot')
-                    ->label('Lệnh Bot')
-                    ->searchable()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('mucTieus.name')
+                    ->label('Mục tiêu')
+                    ->badge()
+                    ->separator(', ')
+                    ->color(fn () => collect([
+                        'primary',
+                        'secondary',
+                        'success',
+                        'warning',
+                        'danger',
+                        'info',
+                    ])->random())
+                    ->limit(50)
+                    ->searchable(),
+
+
 
                 Tables\Columns\TextColumn::make('ghi_chu')
                     ->label('Ghi chú')

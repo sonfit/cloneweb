@@ -21,4 +21,9 @@ class MucTieu extends Model
         'time_create' => 'datetime',
         'time_crawl' => 'datetime',
     ];
+
+    public function bots()
+    {
+        return $this->belongsToMany(Bot::class, 'bot_muc_tieu');
+    }
 }

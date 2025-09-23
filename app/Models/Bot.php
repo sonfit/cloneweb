@@ -12,4 +12,9 @@ class Bot extends Model
         'lenh_bot',
         'ghi_chu'
     ];
+
+    public function mucTieus()
+    {
+        return $this->belongsToMany(MucTieu::class, 'bot_muc_tieu');
+    }
 }

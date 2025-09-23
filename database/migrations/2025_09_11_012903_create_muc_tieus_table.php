@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('muc_tieus', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 50)->comment('Tên hiển thị trong bảng cho dễ tìm kiếm');
+            $table->string('name', 200)->comment('Tên hiển thị trong bảng cho dễ tìm kiếm');
             $table->unsignedTinyInteger('type')->comment('Phân loại mục tiêu: face cá nhân, fanpage, group, tiktok, channel tele, group tele,...');
             $table->string('link')->comment('Link đi đến mục tiêu');
             $table->timestamp('time_create')->useCurrent()->comment('Thời gian tạo trên hệ thống');

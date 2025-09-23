@@ -141,7 +141,8 @@ class TongHopTinhHinhResource extends Resource
                     ->limit(50) // cắt ngắn link cho gọn
                     ->wrap()
                     ->description(fn($record) => $record->sumary ?? '') // tóm tắt hiển thị dưới
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(['link', 'contents_text', 'sumary']),
 
                 // Mục tiêu (liên kết từ bảng muc_tieus)
                 Tables\Columns\TextColumn::make('muctieu.name')
