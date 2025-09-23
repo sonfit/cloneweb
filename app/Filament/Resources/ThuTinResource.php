@@ -9,6 +9,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -118,8 +119,7 @@ class ThuTinResource extends Resource
                     ->label('Mục tiêu')
                     ->url(fn($record) => $record->muctieu?->link, true) // link sang bài gốc
                     ->color('primary')
-                    ->wrap()
-                    ->searchable(),
+                    ->wrap(),
 
                 Tables\Columns\ImageColumn::make('pic')
                     ->label('Hình ảnh')
@@ -149,14 +149,11 @@ class ThuTinResource extends Resource
                             ->modalSubmitAction(false)
                     ),
 
-
-
                 // Phân loại
                 Tables\Columns\TextColumn::make('phanloai')
                     ->label('Phân loại')
                     ->formatStateUsing(fn($state) => trans('options.phanloai.' . $state, [], 'Chưa phân loại'))
                     ->badge()
-                    ->searchable()
                     ->color(fn($state) => match ($state) {
                         1, 2 => 'danger',
                         3, 4 => 'warning',
@@ -175,14 +172,12 @@ class ThuTinResource extends Resource
                         'danger'    => 5,
                     ])
                     ->formatStateUsing(fn($state) => trans('options.levels.' . $state, [], 'Chưa xác định'))
-                    ->sortable()
-                    ->searchable(),
+                    ->sortable(),
 
                 // Người ghi nhận (user)
                 Tables\Columns\TextColumn::make('bot.ten_bot')
                     ->label('Bot')
-                    ->sortable()
-                    ->searchable(),
+                    ->sortable(),
 
                 // Thời gian
                 Tables\Columns\TextColumn::make('time')
@@ -191,7 +186,21 @@ class ThuTinResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                //
+                SelectFilter::make('bot_id')
+                    ->label('Bot')
+                    ->relationship('bot', 'ten_bot'),
+
+                SelectFilter::make('muctieu_id')
+                    ->label('Mục tiêu')
+                    ->relationship('muctieu', 'name'),
+
+                SelectFilter::make('phanloai')
+                    ->label('Phân loại')
+                    ->options(trans('options.phanloai')),
+
+                SelectFilter::make('level')
+                    ->label('Mức độ')
+                    ->options(trans('options.levels')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
