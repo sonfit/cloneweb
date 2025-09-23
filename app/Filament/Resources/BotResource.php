@@ -93,11 +93,9 @@ class BotResource extends Resource
                     ->limit(50)
                     ->searchable(),
 
-
-
-                Tables\Columns\TextColumn::make('ghi_chu')
-                    ->label('Ghi chú')
-                    ->searchable()
+                Tables\Columns\TextColumn::make('time_crawl')
+                    ->label('Lần bot truy cập')
+                    ->dateTime('H:i:s d/m/Y')
                     ->sortable(),
             ])
 
