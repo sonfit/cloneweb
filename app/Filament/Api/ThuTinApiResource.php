@@ -31,7 +31,7 @@ class ThuTinApiResource
         try {
             $query = ThuTin::query();
             if ($request->has('check_link')) {
-                $link = $request->query('check_link');
+                $link = "https://t.me/".$request->query('check_link');
                 $exists = $query->where('link', $link)->first();
 
                 if ($exists) {
