@@ -54,8 +54,6 @@ class ThuTinApiResource
 
     public function store(Request $request)
     {
-
-
         try {
             $data = $request->validate([
                 'id_bot'        => 'nullable|exists:bots,id',
@@ -93,14 +91,38 @@ class ThuTinApiResource
             ]);
 
 
-            $mucTieu = MucTieu::updateOrCreate(
-                ['link' => $data['link_muc_tieu']], // điều kiện tìm
-                [
+            $mucTieu = MucTieu::where('link', $data['link_muc_tieu'])->first();
+
+            if ($mucTieu) {
+                // Nếu đã có record, kiểm tra time_crawl
+                if (!empty($data['time'])) {
+                    $newTime = Carbon::parse($data['time']);
+                    $currentTime = $mucTieu->time_crawl ? Carbon::parse($mucTieu->time_crawl) : null;
+
+                    if (!$currentTime || $newTime->greaterThan($currentTime)) {
+                        // Cập nhật khi DB rỗng hoặc $data['time'] mới hơn
+                        $mucTieu->update([
+                            'name' => $data['ten_muc_tieu'],
+                            'type' => 6,
+                            'time_crawl' => $newTime,
+                        ]);
+                    } else {
+                        // Chỉ cập nhật name, type (không đụng vào time_crawl)
+                        $mucTieu->update([
+                            'name' => $data['ten_muc_tieu'],
+                            'type' => 6,
+                        ]);
+                    }
+                }
+            } else {
+                // Nếu chưa có thì tạo mới
+                $mucTieu = MucTieu::create([
+                    'link' => $data['link_muc_tieu'],
                     'name' => $data['ten_muc_tieu'],
                     'type' => 6,
                     'time_crawl' => $data['time'],
-                ]
-            );
+                ]);
+            }
 
 
             $data['id_muctieu'] = $mucTieu->id;
