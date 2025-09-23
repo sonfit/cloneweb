@@ -98,6 +98,7 @@ class ThuTinResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('time', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('stt')
                     ->label('STT')

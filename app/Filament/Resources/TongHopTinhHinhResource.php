@@ -128,6 +128,7 @@ class TongHopTinhHinhResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('time', 'desc')
             ->columns([
                 // STT
                 Tables\Columns\TextColumn::make('stt')
@@ -175,7 +176,7 @@ class TongHopTinhHinhResource extends Resource
                 // Thời gian
                 Tables\Columns\TextColumn::make('time')
                     ->label('Time')
-                    ->dateTime('d/m/Y')
+                    ->dateTime('H:i:s d/m/Y')
                     ->sortable(),
 
                 // Phân loại

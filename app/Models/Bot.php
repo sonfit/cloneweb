@@ -10,6 +10,7 @@ class Bot extends Model
         'ten_bot',
         'loai_bot',
         'lenh_bot',
+        'time_crawl',
         'ghi_chu'
     ];
 

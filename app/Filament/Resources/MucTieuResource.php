@@ -63,6 +63,7 @@ class MucTieuResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('time_crawl', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('STT')

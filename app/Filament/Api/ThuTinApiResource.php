@@ -276,6 +276,7 @@ class ThuTinApiResource
                 $id_bot = $request->query('id_bot');
                 $bot = $query->where('id', $id_bot)->first();
                 if ($bot) {
+                    $bot->update(['time_crawl' => now()]);
                     return response()->json([
                         'data' => [
                             [
