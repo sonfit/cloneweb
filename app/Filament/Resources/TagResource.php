@@ -10,6 +10,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -26,16 +27,24 @@ class TagResource extends Resource implements HasShieldPermissions
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('tag')->required(),
-                Forms\Components\Select::make('links')
-                    ->relationship('links', 'link')
-                    ->saveRelationshipsUsing(function (Model $record, $state){
-                        $record->links()->sync($state);
-                    })
-                    ->multiple()
-                    ->preload()
-                    ->searchable()
-                    ->columnSpanFull(),
+                Forms\Components\TextInput::make('tag')
+                    ->required(),
+                Forms\Components\TextInput::make('diem')
+                    ->label('Điểm')
+                    ->numeric()
+                    ->minValue(0)
+                    ->maxValue(10)
+                    ->default(0),
+
+//                Forms\Components\Select::make('links')
+//                    ->relationship('links', 'link')
+//                    ->saveRelationshipsUsing(function (Model $record, $state){
+//                        $record->links()->sync($state);
+//                    })
+//                    ->multiple()
+//                    ->preload()
+//                    ->searchable()
+//                    ->columnSpanFull(),
             ]);
     }
 
@@ -44,14 +53,16 @@ class TagResource extends Resource implements HasShieldPermissions
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('tag')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('links_count')
-                    ->label('Số lượng link')
-                    ->sortable()
-                    ->counts('links'),
+                Tables\Columns\TextColumn::make('diem')->sortable()->searchable(),
+//                Tables\Columns\TextColumn::make('links_count')
+//                    ->label('Số lượng link')
+//                    ->sortable()
+//                    ->counts('links'),
 
             ])
             ->filters([
-                //
+                SelectFilter::make('diem')
+                    ->label('Điểm')
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

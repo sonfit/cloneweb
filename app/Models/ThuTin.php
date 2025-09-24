@@ -59,4 +59,11 @@ class ThuTin extends Model
     {
         return $this->belongsTo(MucTieu::class, 'id_muctieu');
     }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, TagThuTin::class, 'thu_tin_id', 'tag_id')
+            ->using(TagThuTin::class) // dùng Pivot model
+            ->withPivot('tag_id', 'thu_tin_id');
+    }
 }

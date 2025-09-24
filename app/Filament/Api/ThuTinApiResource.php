@@ -5,6 +5,7 @@ namespace App\Filament\Api;
 use App\Models\Bot;
 use App\Models\MucTieu;
 use App\Models\ThuTin;
+use App\Services\TinhDiemTuKhoa;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -52,9 +53,11 @@ class ThuTinApiResource
         }
     }
 
+
     public function store(Request $request)
     {
         try {
+            // 1. Validate dữ liệu
             $data = $request->validate([
                 'id_bot'        => 'nullable|exists:bots,id',
                 'id_user'       => 'nullable|exists:users,id',
@@ -68,134 +71,147 @@ class ThuTinApiResource
                 'link_muc_tieu' => 'required|string|max:150',
                 'ten_muc_tieu'  => 'required|string|max:150',
             ], [
-                'link.required'     => 'Link bài viết là bắt buộc.',
-                'link.string'       => 'Link phải là chuỗi ký tự.',
-                'link.max'          => 'Link không được dài quá 150 ký tự.',
-
-                'contents_text.string' => 'Nội dung bài viết phải là chuỗi ký tự.',
-
-                'pic.string'        => 'Tên file ảnh phải là chuỗi.',
-                'pic.max'           => 'Tên file ảnh không được dài quá 150 ký tự.',
-
-                'phanloai.integer'  => 'Phân loại phải là số nguyên.',
-                'level.integer'     => 'Mức độ phải là số nguyên.',
-                'level.min'         => 'Mức độ tối thiểu là 1.',
-                'level.max'         => 'Mức độ tối đa là 5.',
-
-                'time.date'         => 'Trường time phải là ngày giờ hợp lệ (YYYY-MM-DD HH:MM:SS).',
-
-                'id_bot.exists'     => 'id_bot không tồn tại trong bảng bots.',
-                'id_user.exists'    => 'id_user không tồn tại trong bảng users.',
+                'link.required'         => 'Link bài viết là bắt buộc.',
+                'link.string'           => 'Link phải là chuỗi ký tự.',
+                'link.max'              => 'Link không được dài quá 150 ký tự.',
+                'contents_text.string'  => 'Nội dung bài viết phải là chuỗi ký tự.',
+                'pic.string'            => 'Tên file ảnh phải là chuỗi.',
+                'phanloai.integer'      => 'Phân loại phải là số nguyên.',
+                'level.integer'         => 'Mức độ phải là số nguyên.',
+                'level.min'             => 'Mức độ tối thiểu là 1.',
+                'level.max'             => 'Mức độ tối đa là 5.',
+                'time.date'             => 'Trường time phải là ngày giờ hợp lệ (YYYY-MM-DD HH:MM:SS).',
+                'id_bot.exists'         => 'id_bot không tồn tại trong bảng bots.',
+                'id_user.exists'        => 'id_user không tồn tại trong bảng users.',
                 'link_muc_tieu.required'=> 'Link mục tiêu là bắt buộc.',
                 'ten_muc_tieu.required' => 'Tên mục tiêu là bắt buộc.',
             ]);
 
+            // 2. Xử lý bảng Mục Tiêu
+            $mucTieu = MucTieu::firstOrCreate(
+                ['link' => $data['link_muc_tieu']],
+                [
+                    'name'       => $data['ten_muc_tieu'],
+                    'type'       => 6,
+                    'time_crawl' => $data['time'] ?? null,
+                ]
+            );
 
-            $mucTieu = MucTieu::where('link', $data['link_muc_tieu'])->first();
-
-            if ($mucTieu) {
-                // Nếu đã có record, kiểm tra time_crawl
-                if (!empty($data['time'])) {
-                    $newTime = Carbon::parse($data['time']);
-                    $currentTime = $mucTieu->time_crawl ? Carbon::parse($mucTieu->time_crawl) : null;
-
-                    if (!$currentTime || $newTime->greaterThan($currentTime)) {
-                        // Cập nhật khi DB rỗng hoặc $data['time'] mới hơn
-                        $mucTieu->update([
-                            'name' => $data['ten_muc_tieu'],
-                            'type' => 6,
-                            'time_crawl' => $newTime,
-                        ]);
-                    } else {
-                        // Chỉ cập nhật name, type (không đụng vào time_crawl)
-                        $mucTieu->update([
-                            'name' => $data['ten_muc_tieu'],
-                            'type' => 6,
-                        ]);
-                    }
+            if (!empty($data['time'])) {
+                $newTime = Carbon::parse($data['time']);
+                if (!$mucTieu->time_crawl || $newTime->greaterThan($mucTieu->time_crawl)) {
+                    $mucTieu->update([
+                        'name'       => $data['ten_muc_tieu'],
+                        'type'       => 6,
+                        'time_crawl' => $newTime,
+                    ]);
+                } else {
+                    $mucTieu->update([
+                        'name' => $data['ten_muc_tieu'],
+                        'type' => 6,
+                    ]);
                 }
-            } else {
-                // Nếu chưa có thì tạo mới
-                $mucTieu = MucTieu::create([
-                    'link' => $data['link_muc_tieu'],
-                    'name' => $data['ten_muc_tieu'],
-                    'type' => 6,
-                    'time_crawl' => $data['time'],
-                ]);
             }
 
-
             $data['id_muctieu'] = $mucTieu->id;
-            $data['phanloai'] = 5;
+            $data['phanloai']   = 5;
 
-
-
-            // update nếu link đã tồn tại, nếu không thì tạo mới
-//            $thuTin = ThuTin::updateOrCreate(
-//                ['link' => $data['link']], // điều kiện tìm
-//                $data  // dữ liệu để update hoặc create
-//            );
-//            return response()->json($thuTin, 201);
-
-
-
-            // --- Chuẩn hoá contents_text để so sánh (loại thẻ HTML, trim, lowercase) ---
+            // 3. Chuẩn hoá dữ liệu
             $incomingContent = isset($data['contents_text']) ? trim(strip_tags($data['contents_text'])) : null;
             $normalizedIncoming = $incomingContent ? mb_strtolower($incomingContent) : null;
+            $incomingPics = $data['pic'] ?? [];
 
-            // 1) Kiểm tra link đã tồn tại chưa
+            // 4. Kiểm tra tồn tại theo link
             $existingByLink = ThuTin::where('link', $data['link'])->first();
 
             if ($existingByLink) {
-                // Nếu có content incoming và giống với content hiện tại => bỏ qua
+                // So sánh nội dung
                 $existingContent = $existingByLink->contents_text ? trim(strip_tags($existingByLink->contents_text)) : null;
                 $normalizedExisting = $existingContent ? mb_strtolower($existingContent) : null;
 
                 if ($normalizedIncoming && $normalizedIncoming === $normalizedExisting) {
-                    // Bỏ qua (link + nội dung trùng)
+                    // Trùng => bỏ qua và xoá ảnh thừa
+                    $this->deleteOrphanPics($incomingPics, $existingByLink->pic ?? []);
                     return response()->json([
                         'message' => 'Link đã tồn tại và nội dung trùng, bỏ qua.',
-                        'data' => $existingByLink,
+                        'data'    => $existingByLink,
                     ], 200);
                 }
 
-                // Nếu nội dung khác (hoặc incoming content rỗng) -> cập nhật bản ghi hiện có
+                // Nội dung khác => cập nhật
                 $existingByLink->update($data);
-                return response()->json([
-                    'message' => 'Link đã tồn tại, nội dung khác nên đã cập nhật.',
-                    'data' => $existingByLink,
-                ], 200);
-            } else {
-                // Link mới -> kiểm tra nội dung có tồn tại ở bản ghi khác không
-                if ($normalizedIncoming) {
-                    // So sánh case-insensitive, trim. Dùng LOWER(TRIM(...)) để match DB
-                    $existingByContent = ThuTin::whereRaw('LOWER(TRIM(contents_text)) = ?', [$normalizedIncoming])->first();
 
-                    if ($existingByContent) {
-                        // Có bản ghi khác cùng nội dung -> bỏ qua (không tạo bản ghi mới)
-                        return response()->json([
-                            'message' => 'Nội dung đã tồn tại ở một link khác, bỏ qua.',
-                            'data' => $existingByContent,
-                        ], 200);
-                    }
+                $result = TinhDiemTuKhoa::chamDiem($existingByLink->contents_text);
+                $existingByLink->update(['level' => $result['level']]);
+
+                if (!empty($result['tag_ids'])) {
+                    $existingByLink->tags()->sync($result['tag_ids']);
                 }
 
-                // Không trùng nội dung -> tạo mới
-                $thuTin = ThuTin::create($data);
-                return response()->json($thuTin, 201);
+                return response()->json([
+                    'message' => 'Link đã tồn tại, nội dung khác nên đã cập nhật.',
+                    'data'    => $existingByLink,
+                ], 200);
             }
 
+            // 5. Kiểm tra tồn tại theo nội dung
+            if ($normalizedIncoming) {
+                $existingByContent = ThuTin::whereRaw('LOWER(TRIM(contents_text)) = ?', [$normalizedIncoming])->first();
 
+                if ($existingByContent) {
+                    $this->deleteOrphanPics($incomingPics, $existingByLink->pic ?? []);
+                    return response()->json([
+                        'message' => 'Nội dung đã tồn tại ở một link khác, bỏ qua.',
+                        'data'    => $existingByContent,
+                    ], 200);
+                }
+            }
 
+            // 6. Tạo mới
+            $result = TinhDiemTuKhoa::chamDiem($data['contents_text']);
+            $data['level'] = $result['level'];
 
+            $thuTin = ThuTin::create($data);
 
+            if (!empty($result['tag_ids'])) {
+                $thuTin->tags()->sync($result['tag_ids']);
+            }
 
+            return response()->json($thuTin, 201);
 
-
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             return $this->errorResponse($e);
         }
     }
+
+    /**
+     * Xoá ảnh không còn sử dụng
+     */
+    protected function deleteOrphanPics(array $incomingPics, array $currentPics = []): void
+    {
+        // Những ảnh nằm trong incoming nhưng không có trong current -> orphan
+        $orphanPics = array_diff($incomingPics, $currentPics);
+
+        foreach ($orphanPics as $p) {
+            if (!$p || !is_string($p)) {
+                continue;
+            }
+            try {
+                if (Storage::disk('public')->exists($p)) {
+                    Storage::disk('public')->delete($p);
+                } else {
+                    Log::info("Pic not found on disk (skipped): {$p}");
+                }
+            } catch (\Throwable $e) {
+                Log::error('Error while deleting pic', [
+                    'pic' => $p,
+                    'err' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+
 
     public function show($id)
     {

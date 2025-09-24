@@ -174,16 +174,35 @@ class ThuTinResource extends Resource
                     ->formatStateUsing(fn($state) => trans('options.levels.' . $state, [], 'Chưa xác định'))
                     ->sortable(),
 
+                Tables\Columns\TagsColumn::make('tags')
+                    ->label('Tags')
+                    ->getStateUsing(function ($record) {
+                        $tags = $record->tags->pluck('tag'); // Lấy danh sách tag name
+                        $limit = 3;
+
+                        if ($tags->count() > $limit) {
+                            $extraCount = $tags->count() - $limit;
+                            return $tags->take($limit)->push("+{$extraCount}");
+                        }
+                        return $tags;
+                    })
+                    ->separator(', ')
+                    ->badge()
+                    ->color('primary'),
+
+
                 // Người ghi nhận (user)
                 Tables\Columns\TextColumn::make('bot.ten_bot')
                     ->label('Bot')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 // Thời gian
                 Tables\Columns\TextColumn::make('time')
-                    ->label('Time')
+                    ->label('Thời gian')
                     ->dateTime('H:i:s d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('bot_id')
