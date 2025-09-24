@@ -44,10 +44,30 @@ class TagResource extends Resource implements HasShieldPermissions
             ])
             ->filters([
                 SelectFilter::make('diem')
-                    ->label('Điểm')
+                    ->label('Lọc theo điểm')
+                    ->options([
+                        '0' => 'Không có điểm',
+                        '1' => '1',
+                        '2' => '2',
+                        '3' => '3',
+                        '4' => '4',
+                        '5' => '5',
+                        '6' => '6',
+                        '7' => '7',
+                        '8' => '8',
+                        '9' => '9',
+                        '10' => '10',
+                    ])
+                    ->placeholder('Chọn điểm')
+                    ->default(null) // Không chọn mặc định
+                    ->multiple() // Cho phép chọn nhiều điểm để lọc
+                    ->query(function ($query, array $data) {
+                        if (!empty($data['values'])) {
+                            $query->whereIn('diem', $data['values']);
+                        }
+                    }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
