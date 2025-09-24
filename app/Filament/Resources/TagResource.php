@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TagResource\Pages;
-use App\Filament\Resources\TagResource\RelationManagers;
 use App\Models\Tag;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
@@ -12,9 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+
 
 class TagResource extends Resource implements HasShieldPermissions
 {
@@ -35,16 +32,6 @@ class TagResource extends Resource implements HasShieldPermissions
                     ->minValue(0)
                     ->maxValue(10)
                     ->default(0),
-
-//                Forms\Components\Select::make('links')
-//                    ->relationship('links', 'link')
-//                    ->saveRelationshipsUsing(function (Model $record, $state){
-//                        $record->links()->sync($state);
-//                    })
-//                    ->multiple()
-//                    ->preload()
-//                    ->searchable()
-//                    ->columnSpanFull(),
             ]);
     }
 
@@ -54,11 +41,6 @@ class TagResource extends Resource implements HasShieldPermissions
             ->columns([
                 Tables\Columns\TextColumn::make('tag')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('diem')->sortable()->searchable(),
-//                Tables\Columns\TextColumn::make('links_count')
-//                    ->label('Số lượng link')
-//                    ->sortable()
-//                    ->counts('links'),
-
             ])
             ->filters([
                 SelectFilter::make('diem')
