@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ThuTinResource\Pages;
 use App\Filament\Resources\ThuTinResource\RelationManagers;
 use App\Models\ThuTin;
+use App\Services\FunctionHelp;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -188,7 +189,12 @@ class ThuTinResource extends Resource
                     })
                     ->separator(', ')
                     ->badge()
-                    ->color('primary'),
+                    ->sortable(query: function ($query, $direction) {
+                        return $query->withCount('tags')->orderBy('tags_count', $direction);
+                    })
+                    ->color('primary')   ->tooltip(function ($record) {
+                        return $record->tags->pluck('tag')->join(', ');
+                    }),
 
 
                 // Người ghi nhận (user)
@@ -202,6 +208,9 @@ class ThuTinResource extends Resource
                     ->label('Thời gian')
                     ->dateTime('H:i:s d/m/Y')
                     ->sortable()
+                    ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('H:i:s d/m/Y'))
+                    ->color(fn ($state) => FunctionHelp::timeBadgeColor($state)) // Đảm bảo $state là giá trị gốc
+                    ->badge()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([

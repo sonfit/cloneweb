@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MucTieuResource\Pages;
 use App\Filament\Resources\MucTieuResource\RelationManagers;
 use App\Models\MucTieu;
+use App\Services\FunctionHelp;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -29,7 +30,7 @@ class MucTieuResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->label('Tên hiển thị')
                     ->required()
-                    ->maxLength(50),
+                    ->maxLength(250),
 
 
                 Forms\Components\TextInput::make('link')
@@ -81,11 +82,13 @@ class MucTieuResource extends Resource
                     ->formatStateUsing(fn($state) => trans('options.sources.' . $state, [], 'Chưa xác định')),
 
 
-
                 Tables\Columns\TextColumn::make('time_crawl')
                     ->label('Lần bot truy cập')
                     ->dateTime('H:i:s d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('H:i:s d/m/Y'))
+                    ->color(fn ($state) => FunctionHelp::timeBadgeColor($state)) // Đảm bảo $state là giá trị gốc
+                    ->badge(),
 
                 Tables\Columns\TextColumn::make('time_create')
                     ->label('Tạo trên hệ thống')

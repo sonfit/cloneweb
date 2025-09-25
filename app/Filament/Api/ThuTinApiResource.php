@@ -5,7 +5,7 @@ namespace App\Filament\Api;
 use App\Models\Bot;
 use App\Models\MucTieu;
 use App\Models\ThuTin;
-use App\Services\TinhDiemTuKhoa;
+use App\Services\FunctionHelp;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -141,7 +141,7 @@ class ThuTinApiResource
                 // Nội dung khác => cập nhật
                 $existingByLink->update($data);
 
-                $result = TinhDiemTuKhoa::chamDiem($existingByLink->contents_text);
+                $result = FunctionHelp::chamDiemTuKhoa($existingByLink->contents_text);
                 $existingByLink->update(['level' => $result['level']]);
 
                 if (!empty($result['tag_ids'])) {
@@ -168,7 +168,7 @@ class ThuTinApiResource
             }
 
             // 6. Tạo mới
-            $result = TinhDiemTuKhoa::chamDiem($data['contents_text']);
+            $result = FunctionHelp::chamDiemTuKhoa($data['contents_text']);
             $data['level'] = $result['level'];
 
             $thuTin = ThuTin::create($data);

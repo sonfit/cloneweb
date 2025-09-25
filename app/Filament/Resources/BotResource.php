@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\BotResource\Pages;
 use App\Filament\Resources\BotResource\RelationManagers;
 use App\Models\Bot;
+use App\Services\FunctionHelp;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -96,7 +97,10 @@ class BotResource extends Resource
                 Tables\Columns\TextColumn::make('time_crawl')
                     ->label('Lần bot truy cập')
                     ->dateTime('H:i:s d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('H:i:s d/m/Y'))
+                    ->color(fn ($state) => FunctionHelp::timeBadgeColor($state)) // Đảm bảo $state là giá trị gốc
+                    ->badge(),
             ])
 
             ->filters([

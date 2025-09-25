@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\ThuTin;
 use App\Models\Tag;
+use Carbon\Carbon;
 
-class TinhDiemTuKhoa
+class FunctionHelp
 {
-    public static function chamDiem(?string $contents_text): array
+    public static function chamDiemTuKhoa(?string $contents_text): array
     {
         if (!$contents_text) {
             return ['level' => 1, 'tag_ids' => []];
@@ -39,5 +39,25 @@ class TinhDiemTuKhoa
             'level'   => $level,
             'tag_ids' => $matchedIds,
         ];
+    }
+
+    public static function timeBadgeColor($time): string
+    {
+        $time = Carbon::parse($time);
+        $diffHours = abs(Carbon::now()->diffInHours($time)); // Dương cho quá khứ
+
+        if ($diffHours > 6) {
+            return 'danger'; // Cũ >6 giờ: đỏ
+        } elseif ($diffHours > 5) {
+            return 'warning'; // >5 giờ: cam
+        } elseif ($diffHours > 4) {
+            return 'info'; // >4 giờ: xám
+        } elseif ($diffHours > 3) {
+            return 'secondary'; // >3 giờ: xám nhạt
+        } elseif ($diffHours > 2) {
+            return 'primary'; // >2 giờ: xanh dương
+        } else {
+            return 'success'; // Mới (≤2 giờ): xanh lá
+        }
     }
 }
