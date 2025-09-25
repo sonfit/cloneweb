@@ -92,7 +92,6 @@ class ThuTinApiResource
                 ['link' => $data['link_muc_tieu']],
                 [
                     'name'       => $data['ten_muc_tieu'],
-                    'type'       => 6,
                     'time_crawl' => $data['time'] ?? null,
                 ]
             );
