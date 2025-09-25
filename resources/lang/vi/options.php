@@ -10,11 +10,11 @@ return [
     ],
     'sources' => [
         1 => 'Facebook cá nhân',
-        2 => 'Fanpage',
-        3 => 'Group',
+        2 => 'Facebook Fanpage',
+        3 => 'Facebook Group',
         4 => 'TikTok',
-        5 => 'Channel Telegram',
-        6 => 'Group Telegram',
+        5 => 'Telegram Channel',
+        6 => 'Telegram Group',
     ],
     'levels' => [
         1 => '⭐ - Rất thấp',

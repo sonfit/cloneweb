@@ -114,7 +114,7 @@ class ThuTinApiResource
             }
 
             $data['id_muctieu'] = $mucTieu->id;
-            $data['phanloai']   = 5;
+            $data['phanloai']   = $mucTieu->phanloai;
 
             // 3. Chuẩn hoá dữ liệu
             $incomingContent = isset($data['contents_text']) ? trim(strip_tags($data['contents_text'])) : null;

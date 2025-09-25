@@ -10,6 +10,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -40,17 +41,23 @@ class MucTieuResource extends Resource
                     ->required()
                     ->unique(ignoreRecord: true),
 
-                Forms\Components\Radio::make('type')
+                Forms\Components\Radio::make('phanloai')
                     ->label('Phân loại')
+                    ->options(__('options.phanloai'))
+                    ->default(1)
+                    ->required()
+                    ->columns(2)
+                    ->extraAttributes(['style' => 'margin-left: 50px;']),
+
+                Forms\Components\Radio::make('type')
+                    ->label('Nguồn')
                     ->options(__('options.sources'))
                     ->default(1)
                     ->required()
                     ->columns(2)
                     ->extraAttributes(['style' => 'margin-left: 50px;']),
-                Forms\Components\Textarea::make('ghi_chu')
-                    ->label('Ghi chú')
-                    ->maxLength(1000)
-                    ->rows(6),
+
+
                 Forms\Components\DateTimePicker::make('time_create')
                     ->label('Thời gian tạo trên hệ thống')
                     ->default(now())
@@ -59,6 +66,11 @@ class MucTieuResource extends Resource
                 Forms\Components\DateTimePicker::make('time_crawl')
                     ->label('Lần cuối bot truy cập')
                     ->default(now()),
+
+                Forms\Components\Textarea::make('ghi_chu')
+                    ->label('Ghi chú')
+                    ->maxLength(1000)
+                    ->rows(6),
             ]);
     }
 
@@ -77,8 +89,13 @@ class MucTieuResource extends Resource
                     ->searchable(['name', 'link'])
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('type')
+                Tables\Columns\TextColumn::make('phanloai')
                     ->label('Phân loại')
+                    ->sortable()
+                    ->formatStateUsing(fn($state) => trans('options.phanloai.' . $state, [], 'Chưa xác định')),
+
+                Tables\Columns\TextColumn::make('type')
+                    ->label('Nguồn')
                     ->sortable()
                     ->formatStateUsing(fn($state) => trans('options.sources.' . $state, [], 'Chưa xác định')),
 
@@ -104,7 +121,9 @@ class MucTieuResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                SelectFilter::make('phanloai')
+                    ->label('Phân loại')
+                    ->options(trans('options.sources')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

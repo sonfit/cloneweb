@@ -10,6 +10,7 @@ class MucTieu extends Model
 
     protected $fillable = [
         'name',
+        'phanloai',
         'type',
         'link',
         'time_create',
