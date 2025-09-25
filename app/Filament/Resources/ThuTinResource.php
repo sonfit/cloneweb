@@ -85,8 +85,8 @@ class ThuTinResource extends Resource
                     ->maxSize(512000)
                     ->nullable()
                     ->multiple()
-                    ->imagePreviewHeight('200') // hiện thumbnail to
-                    ->panelLayout('grid')       // kiểu grid => giống dropzone
+                    ->imagePreviewHeight('200')
+                    ->panelLayout('grid')
                     ->reorderable()
                     ->acceptedFileTypes([
                         'image/jpeg',
