@@ -142,4 +142,9 @@ class TongHopResource extends Resource implements HasShieldPermissions
         return true;
     }
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false; // Không hiển thị trong menu/sidebar
+    }
+
 }

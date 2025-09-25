@@ -21,6 +21,7 @@ class ThuTinResource extends Resource
     protected static ?string $model = ThuTin::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
+    protected static ?string $navigationGroup = 'Tổng Hợp';
     protected static ?string $navigationLabel = 'Thu tin';
     protected static ?string $modelLabel = 'Thu tin';
     protected static ?string $slug = 'thu-tin';

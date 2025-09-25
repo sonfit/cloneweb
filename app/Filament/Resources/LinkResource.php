@@ -102,4 +102,9 @@ class LinkResource extends Resource implements HasShieldPermissions
             'delete_any',
         ];
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false; // Không hiển thị trong menu/sidebar
+    }
 }

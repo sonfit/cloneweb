@@ -19,6 +19,7 @@ class BotResource extends Resource
     protected static ?string $model = Bot::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cpu-chip';
+    protected static ?string $navigationGroup = 'Tổng Hợp';
     protected static ?string $navigationLabel = 'Bot';
     protected static ?string $modelLabel = 'Bot';
     protected static ?string $slug = 'bot';

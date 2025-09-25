@@ -19,6 +19,7 @@ class MucTieuResource extends Resource
     protected static ?string $model = MucTieu::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
+    protected static ?string $navigationGroup = 'Tổng Hợp';
     protected static ?string $navigationLabel = 'Mục tiêu';
     protected static ?string $modelLabel = 'Mục tiêu';
     protected static ?string $slug = 'muc-tieu';

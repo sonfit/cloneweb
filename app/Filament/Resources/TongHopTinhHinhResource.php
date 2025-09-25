@@ -19,6 +19,7 @@ class TongHopTinhHinhResource extends Resource
     protected static ?string $model = TongHopTinhHinh::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-circle-stack';
+    protected static ?string $navigationGroup = 'Tổng Hợp';
     protected static ?string $navigationLabel = 'Tổng hợp tình hình';
     protected static ?string $modelLabel = 'Tổng hợp tình hình';
     protected static ?string $slug = 'tong-hop-tinh-hinh';
