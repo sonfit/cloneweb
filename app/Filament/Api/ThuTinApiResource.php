@@ -102,13 +102,11 @@ class ThuTinApiResource
                 if (!$mucTieu->time_crawl || $newTime->greaterThan($mucTieu->time_crawl)) {
                     $mucTieu->update([
                         'name'       => $data['ten_muc_tieu'],
-                        'type'       => 6,
                         'time_crawl' => $newTime,
                     ]);
                 } else {
                     $mucTieu->update([
                         'name' => $data['ten_muc_tieu'],
-                        'type' => 6,
                     ]);
                 }
             }
