@@ -30,6 +30,17 @@ class ThuTinResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('id_user')
+                    ->label('Người chia sẻ')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->default(auth()->id()),
+
+                Forms\Components\DateTimePicker::make('time')
+                    ->label('Thời gian ghi nhận')
+                    ->seconds(false)
+                    ->default(now()),
+
                 Forms\Components\TextInput::make('link')
                     ->label('Link bài viết')
                     ->maxLength(150)
@@ -55,6 +66,17 @@ class ThuTinResource extends Resource
                     ->columns(2)
                     ->extraAttributes(['style' => 'margin-left: 50px;']),
 
+                Forms\Components\Radio::make('level')
+                    ->label('Mức độ quan trọng')
+                    ->options(__('options.levels'))
+                    ->default(1)
+                    ->extraAttributes(['style' => 'margin-left: 50px;'])
+                    ->required(),
+
+                Forms\Components\Textarea::make('contents_text')
+                    ->label('Nội dung bài viết')
+                    ->rows(10),
+
                 Forms\Components\FileUpload::make('pic')
                     ->label('Ảnh chụp màn hình')
                     ->image()
@@ -63,6 +85,9 @@ class ThuTinResource extends Resource
                     ->maxSize(512000)
                     ->nullable()
                     ->multiple()
+                    ->imagePreviewHeight('200') // hiện thumbnail to
+                    ->panelLayout('grid')       // kiểu grid => giống dropzone
+                    ->reorderable()
                     ->acceptedFileTypes([
                         'image/jpeg',
                         'image/png',
@@ -74,27 +99,11 @@ class ThuTinResource extends Resource
                     ]),
 
 
-                Forms\Components\Textarea::make('contents_text')
-                    ->label('Nội dung bài viết')
-                    ->rows(7),
 
-                Forms\Components\Radio::make('level')
-                    ->label('Mức độ quan trọng')
-                    ->options(__('options.levels'))
-                    ->default(1)
-                    ->extraAttributes(['style' => 'margin-left: 50px;'])
-                    ->required(),
 
-                Forms\Components\Select::make('id_user')
-                    ->label('Người chia sẻ')
-                    ->relationship('user', 'name')
-                    ->searchable()
-                    ->default(auth()->id()),
 
-                Forms\Components\DateTimePicker::make('time')
-                    ->label('Thời gian ghi nhận')
-                    ->seconds(false)
-                    ->default(now()),
+
+
             ]);
     }
 
