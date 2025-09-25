@@ -85,18 +85,18 @@ class MucTieuResource extends Resource
 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên hiển thị')
+                    ->limit(30)
                     ->url(fn ($record) => $record->link, true)
                     ->searchable(['name', 'link'])
-                    ->sortable(),
+                    ->sortable()
+                    ->tooltip(fn($record) => $record->name ?? ''),
 
                 Tables\Columns\TextColumn::make('phanloai')
                     ->label('Phân loại')
-                    ->sortable()
                     ->formatStateUsing(fn($state) => trans('options.phanloai.' . $state, [], 'Chưa xác định')),
 
                 Tables\Columns\TextColumn::make('type')
                     ->label('Nguồn')
-                    ->sortable()
                     ->formatStateUsing(fn($state) => trans('options.sources.' . $state, [], 'Chưa xác định')),
 
 
@@ -123,6 +123,9 @@ class MucTieuResource extends Resource
             ->filters([
                 SelectFilter::make('phanloai')
                     ->label('Phân loại')
+                    ->options(trans('options.phanloai')),
+                SelectFilter::make('type')
+                    ->label('Nguôn')
                     ->options(trans('options.sources')),
             ])
             ->actions([
