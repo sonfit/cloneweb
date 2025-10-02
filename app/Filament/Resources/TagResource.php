@@ -19,6 +19,9 @@ class TagResource extends Resource implements HasShieldPermissions
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
     protected static ?string $navigationGroup = 'Tổng Hợp';
+    protected static ?string $navigationLabel = 'Từ khoá';
+    protected static ?string $modelLabel = 'Từ khóa';
+    protected static ?string $slug = 'tu-khoa';
 
     public static function form(Form $form): Form
     {
@@ -39,8 +42,8 @@ class TagResource extends Resource implements HasShieldPermissions
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('tag')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('diem')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('tag')->label('Từ khoá')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('diem')->label('Điểm')->sortable()->searchable(),
             ])
             ->filters([
                 SelectFilter::make('diem')

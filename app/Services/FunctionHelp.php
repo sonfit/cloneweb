@@ -46,18 +46,16 @@ class FunctionHelp
         $time = Carbon::parse($time);
         $diffHours = abs(Carbon::now()->diffInHours($time)); // Dương cho quá khứ
 
-        if ($diffHours > 6) {
-            return 'danger'; // Cũ >6 giờ: đỏ
-        } elseif ($diffHours > 5) {
-            return 'warning'; // >5 giờ: cam
+        if ($diffHours > 5) {
+            return 'danger';
         } elseif ($diffHours > 4) {
-            return 'info'; // >4 giờ: xám
+            return 'warning';
         } elseif ($diffHours > 3) {
-            return 'secondary'; // >3 giờ: xám nhạt
+            return 'info';
         } elseif ($diffHours > 2) {
-            return 'primary'; // >2 giờ: xanh dương
+            return 'primary';
         } else {
-            return 'success'; // Mới (≤2 giờ): xanh lá
+            return 'success';
         }
     }
 }
