@@ -51,9 +51,9 @@ class FunctionHelp
         } elseif ($diffHours > 4) {
             return 'warning';
         } elseif ($diffHours > 3) {
-            return 'info';
-        } elseif ($diffHours > 2) {
             return 'primary';
+        } elseif ($diffHours > 2) {
+            return 'info';
         } else {
             return 'success';
         }
