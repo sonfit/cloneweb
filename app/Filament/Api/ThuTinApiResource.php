@@ -290,7 +290,7 @@ class ThuTinApiResource
         ], $status);
     }
 
-    public function upload(Request $request)
+    public function upload1(Request $request)
     {
         Log::info('Received file upload request', [
             'file' => $request->hasFile('file') ? $request->file('file')->getClientOriginalName() : 'No file'
@@ -350,6 +350,122 @@ class ThuTinApiResource
                 'message' => 'An unexpected error occurred',
                 'error'   => $e->getMessage(),
                 'file'    => $request->hasFile('file') ? $request->file('file')->getClientOriginalName() : 'No file'
+            ], 500);
+        }
+    }
+
+    public function upload(Request $request)
+    {
+        Log::info('Received file upload request', [
+            'has_file' => $request->hasFile('file'),
+            'name'     => $request->hasFile('file') ? $request->file('file')->getClientOriginalName() : null,
+            'size'     => $request->hasFile('file') ? $request->file('file')->getSize() : null,
+            'mime'     => $request->hasFile('file') ? $request->file('file')->getMimeType() : null,
+        ]);
+
+        try {
+            $request->validate([
+                'file' => 'required|file|max:512000', // 512000 KB ~ 500MB (áp cho tất cả)
+            ]);
+
+            $file = $request->file('file');
+            if (!$file || !$file->isValid()) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Invalid uploaded file'
+                ], 422);
+            }
+
+            $mime = strtolower($file->getMimeType() ?? '');
+            $ext  = strtolower($file->getClientOriginalExtension() ?? '');
+
+            $isImage = str_starts_with($mime, 'image/');
+            $isVideo = str_starts_with($mime, 'video/');
+
+            // (Tuỳ chọn) Nếu muốn siết chặt hơn:
+            // Ảnh ≤ 20MB, Video ≤ 500MB
+            if ($isImage && $file->getSize() > 20 * 1024 * 1024) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Image exceeds 20MB limit'
+                ], 422);
+            }
+            if (!$isImage && !$isVideo) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Unsupported file type'
+                ], 422);
+            }
+
+            $date      = now()->format('Ymd');
+            $directory = "uploads/thutin/{$date}";
+            Storage::disk('public')->makeDirectory($directory);
+
+            if ($isImage) {
+                // Chuyển ảnh → WebP an toàn bằng stream
+                try {
+                    // (Tuỳ chọn) sửa xoay ảnh theo EXIF nếu có
+                    $img = \Intervention\Image\Facades\Image::make($file);
+                    if (method_exists($img, 'orientate')) {
+                        $img->orientate();
+                    }
+
+                    // (Tuỳ chọn) resize nếu ảnh quá lớn để giảm RAM/CPU
+                    // if ($img->width() > 4000 || $img->height() > 4000) {
+                    //     $img->resize(4000, 4000, function ($c) { $c->aspectRatio(); $c->upsize(); });
+                    // }
+
+                    $encoded = $img->encode('webp', 80)->stream(); // stream() để nhận binary
+                    $fileName = time() . '_' . uniqid('', true) . '.webp';
+                    $path = $directory . '/' . $fileName;
+
+                    Storage::disk('public')->put($path, $encoded);
+                } catch (\Throwable $e) {
+                    Log::error('Image conversion to WebP failed', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                    ]);
+                    return response()->json([
+                        'status'  => 'error',
+                        'message' => 'Image conversion failed',
+                        'error'   => $e->getMessage(),
+                    ], 500);
+                }
+            } else {
+                // Video → giữ nguyên extension, dùng putFileAs
+                $safeExt = in_array($ext, ['mp4','mov','avi','mkv','webm']) ? $ext : 'mp4';
+                $fileName = time() . '_' . uniqid('', true) . '.' . $safeExt;
+                $path = $directory . '/' . $fileName;
+
+                Storage::disk('public')->putFileAs($directory, $file, $fileName);
+            }
+
+            // Trả về URL công khai nếu cần (disk public đã storage:link)
+            $publicUrl = Storage::disk('public')->url($path);
+
+            return response()->json([
+                'status' => 'success',
+                'path'   => $path,
+                'url'    => $publicUrl,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('File upload validation failed', [
+                'errors' => $e->errors(),
+            ]);
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Validation failed',
+                'errors'  => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+            Log::error('File upload error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'An unexpected error occurred',
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
