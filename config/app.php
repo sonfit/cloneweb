@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'agent_token' => env('AGENT_TOKEN', 'your-secret-token'),
+
 ];

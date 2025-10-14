@@ -39,4 +39,8 @@ return [
         'key' => env('API_KEY', 'default_key'),
     ],
 
+    'trace_agent' => [
+        'token' => env('TRACE_AGENT_TOKEN')
+    ]
+
 ];
