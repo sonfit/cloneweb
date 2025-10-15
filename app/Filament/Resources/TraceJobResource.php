@@ -92,38 +92,39 @@ class TraceJobResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('result')
                     ->label('Kết quả')
                     ->formatStateUsing(function ($state) {
-
                         if (empty($state)) {
-                            return 'Chưa có kết quả';
+                            return '<span style="color:#999;">Chưa có kết quả</span>';
                         }
-                        // Xử lý nếu $state là string (JSON)
+
+                        // Nếu $state là chuỗi JSON
                         if (is_string($state)) {
                             $state = '[' . $state . ']';
                             $state = json_decode($state, true);
+                            if (json_last_error() !== JSON_ERROR_NONE) {
+                                return '<span style="color:#999;">Dữ liệu không hợp lệ</span>';
+                            }
                         }
 
                         $formattedResults = [];
+
                         foreach ($state as $item) {
                             $name = $item['CHU_SO_HUU'] ?? 'Không có';
                             $sdt = $item['SO_DIEN_THOAI'] ?? 'Không có';
                             $cccd = $item['CCCD'] ?? 'Không có';
                             $diachi = $item['DIA_CHI'] ?? 'Không có';
-                            $fbName = $item['FB_NAME'] ?? 'Không có';
-                            $fbUid = $item['FB_UID'] ?? 'Không có';
 
-                            $result = "<b>{$name}</b> (SĐT: {$sdt}, CCCD: {$cccd})<br>";
-                            $result .= "<b>Địa chỉ:</b> {$diachi}<br>";
-
-                            if ($fbUid !== 'Không có' && $fbUid !== '') {
-                                $result .= "<b>Facebook:</b> <a href='https://facebook.com/{$fbUid}' target='_blank'>{$fbName}</a>";
-                            } else {
-                                $result .= "<b>Facebook:</b> {$fbName}";
-                            }
+                            // Tạo HTML hiển thị gọn gàng
+                            $result = "
+                                <b>{$name}</b><br>
+                                <b>SĐT:</b> {$sdt} | <b>CCCD:</b> {$cccd}<br>
+                                <b>Địa chỉ:</b> {$diachi}<br>
+                                <br>
+                            ";
 
                             $formattedResults[] = $result;
                         }
 
-                        return implode("<br><br>", $formattedResults);
+                        return implode('', $formattedResults);
                     })
                     ->html()
                     ->wrap()
