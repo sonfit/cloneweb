@@ -12,5 +12,5 @@ Route::middleware('api.key')->group(function () {
 
 // Endpoint cho Agent (máy A) – dùng Bearer token
 Route::get('/agent/jobs', [AgentController::class, 'pending']);
-Route::patch('/agent/jobs/{id}/claim', [AgentController::class, 'claim']);
+Route::get('/agent/jobs/{id}/claim', [AgentController::class, 'claim']);
 Route::post('/agent/jobs/{id}/result', [AgentController::class, 'result']);

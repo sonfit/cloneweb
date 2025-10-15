@@ -76,7 +76,7 @@ class AgentController extends Controller
         // Synchronize other jobs with the same payload (cùng sdt, cccd, hoặc fb)
         if ($job && $job->payload) {
             $payload = json_decode($job->payload, true);
-            
+
             // Tìm tất cả job có cùng ít nhất 1 thông tin (sdt, cccd, fb)
             $syncQuery = DB::table('trace_jobs')
                 ->where('id', '!=', $id)
@@ -84,24 +84,24 @@ class AgentController extends Controller
 
             $conditions = [];
             $values = [];
-            
+
             foreach ($payload as $key => $value) {
                 if ($value !== null && $value !== '') {
                     $conditions[] = "JSON_EXTRACT(payload, '$.{$key}') = ?";
                     $values[] = $value;
                 }
             }
-            
+
             if (!empty($conditions)) {
                 $whereClause = implode(' OR ', $conditions);
                 $syncQuery->whereRaw($whereClause, $values);
-                
+
                 $updated = $syncQuery->update([
                     'status' => $validated['status'],
                     'result' => array_key_exists('result', $validated) ? json_encode($validated['result'], JSON_UNESCAPED_UNICODE) : null,
                     'updated_at' => now(),
                 ]);
-                
+
                 \Log::info("Synced {$updated} jobs with same payload data");
             }
         }
