@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\DangKy;
+use App\Models\ThuTin;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class DangKyPolicy
+class ThuTinPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class DangKyPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_dang::ky');
+        return $user->can('view_any_thu::tin');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, DangKy $dangKy): bool
+    public function view(User $user, ThuTin $thuTin): bool
     {
-        return $user->can('view_dang::ky');
+        return $user->can('view_thu::tin');
     }
 
     /**
@@ -31,23 +31,23 @@ class DangKyPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_dang::ky');
+        return $user->can('create_thu::tin');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, DangKy $dangKy): bool
+    public function update(User $user, ThuTin $thuTin): bool
     {
-        return $user->can('update_dang::ky');
+        return $user->can('update_thu::tin');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, DangKy $dangKy): bool
+    public function delete(User $user, ThuTin $thuTin): bool
     {
-        return $user->can('delete_dang::ky');
+        return $user->can('delete_thu::tin');
     }
 
     /**
@@ -55,15 +55,15 @@ class DangKyPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_dang::ky');
+        return $user->can('delete_any_thu::tin');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, DangKy $dangKy): bool
+    public function forceDelete(User $user, ThuTin $thuTin): bool
     {
-        return $user->can('{{ ForceDelete }}');
+        return $user->can('force_delete_thu::tin');
     }
 
     /**
@@ -71,15 +71,15 @@ class DangKyPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('{{ ForceDeleteAny }}');
+        return $user->can('force_delete_any_thu::tin');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, DangKy $dangKy): bool
+    public function restore(User $user, ThuTin $thuTin): bool
     {
-        return $user->can('{{ Restore }}');
+        return $user->can('restore_thu::tin');
     }
 
     /**
@@ -87,15 +87,15 @@ class DangKyPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('{{ RestoreAny }}');
+        return $user->can('restore_any_thu::tin');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, DangKy $dangKy): bool
+    public function replicate(User $user, ThuTin $thuTin): bool
     {
-        return $user->can('{{ Replicate }}');
+        return $user->can('replicate_thu::tin');
     }
 
     /**
@@ -103,6 +103,6 @@ class DangKyPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('{{ Reorder }}');
+        return $user->can('reorder_thu::tin');
     }
 }

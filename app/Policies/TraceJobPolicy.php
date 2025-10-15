@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\DangKy;
+use App\Models\TraceJob;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class DangKyPolicy
+class TraceJobPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class DangKyPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_dang::ky');
+        return $user->can('view_any_trace::job');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, DangKy $dangKy): bool
+    public function view(User $user, TraceJob $traceJob): bool
     {
-        return $user->can('view_dang::ky');
+        return $user->can('view_trace::job');
     }
 
     /**
@@ -31,23 +31,23 @@ class DangKyPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_dang::ky');
+        return $user->can('create_trace::job');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, DangKy $dangKy): bool
+    public function update(User $user, TraceJob $traceJob): bool
     {
-        return $user->can('update_dang::ky');
+        return $user->can('update_trace::job');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, DangKy $dangKy): bool
+    public function delete(User $user, TraceJob $traceJob): bool
     {
-        return $user->can('delete_dang::ky');
+        return $user->can('delete_trace::job');
     }
 
     /**
@@ -55,13 +55,13 @@ class DangKyPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_dang::ky');
+        return $user->can('delete_any_trace::job');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, DangKy $dangKy): bool
+    public function forceDelete(User $user, TraceJob $traceJob): bool
     {
         return $user->can('{{ ForceDelete }}');
     }
@@ -77,7 +77,7 @@ class DangKyPolicy
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, DangKy $dangKy): bool
+    public function restore(User $user, TraceJob $traceJob): bool
     {
         return $user->can('{{ Restore }}');
     }
@@ -93,7 +93,7 @@ class DangKyPolicy
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, DangKy $dangKy): bool
+    public function replicate(User $user, TraceJob $traceJob): bool
     {
         return $user->can('{{ Replicate }}');
     }

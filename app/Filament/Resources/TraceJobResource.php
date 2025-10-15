@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TraceJobResource\Pages;
 use App\Models\TraceJob;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -11,7 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class TraceJobResource extends Resource
+class TraceJobResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = TraceJob::class;
 
@@ -95,7 +96,6 @@ class TraceJobResource extends Resource
                         if (empty($state)) {
                             return 'Chưa có kết quả';
                         }
-
                         // Xử lý nếu $state là string (JSON)
                         if (is_string($state)) {
                             $state = '[' . $state . ']';
@@ -138,10 +138,7 @@ class TraceJobResource extends Resource
                         'success' => 'done',
                         'danger' => 'failed',
                     ]),
-                Tables\Columns\TextColumn::make('claimed_at')
-                    ->label('Claimed at')
-                    ->dateTime()
-                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Tạo lúc')
                     ->dateTime()
@@ -185,6 +182,18 @@ class TraceJobResource extends Resource
             'index' => Pages\ListTraceJobs::route('/'),
             'create' => Pages\CreateTraceJob::route('/create'),
             'view' => Pages\ViewTraceJob::route('/{record}'),
+        ];
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
         ];
     }
 }

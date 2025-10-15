@@ -315,20 +315,20 @@ class DangKyResource extends Resource implements HasShieldPermissions
         ];
     }
 
-    public static function canCreate(): bool
-    {
-        return true;
-    }
-
-    public static function canViewAny(): bool
-    {
-        return true;
-    }
-
-    public static function canView(Model $record): bool
-    {
-        return true;
-//        return auth()->user()->hasPermissionTo('view_dangky') || auth()->user()->id === $record->user_id;
-    }
+//    public static function canCreate(): bool
+//    {
+//        return true;
+//    }
+//
+//    public static function canViewAny(): bool
+//    {
+//        return true;
+//    }
+//
+//    public static function canView(Model $record): bool
+//    {
+//        return true;
+////        return auth()->user()->hasPermissionTo('view_dangky') || auth()->user()->id === $record->user_id;
+//    }
 
 }
