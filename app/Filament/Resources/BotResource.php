@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\BotResource\Pages;
 use App\Filament\Resources\BotResource\RelationManagers;
 use App\Models\Bot;
+use App\Models\MucTieu;
 use App\Services\FunctionHelp;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Lang;
 
 class BotResource extends Resource
 {
@@ -52,8 +54,11 @@ class BotResource extends Resource
                     ->preload()
                     ->nullable()
                     ->getOptionLabelFromRecordUsing(function ($record) {
-                        return (__('options.sources.' . $record->type, [], 'Không rõ') . ' - ' . $record->name ?? 'Không rõ');
-                    }),
+                    $sourceKey = 'options.sources.' . $record->type;
+                    $source = Lang::has($sourceKey) ? trans($sourceKey) : 'Không rõ';
+                    return $source . ' - ' . ($record->name ?? 'Không rõ');
+                }),
+
 
                 Forms\Components\Textarea::make('ghi_chu')
                     ->label('Ghi chú')
@@ -84,7 +89,7 @@ class BotResource extends Resource
                     ->label('Mục tiêu')
                     ->badge()
                     ->separator(', ')
-                    ->color(fn () => collect([
+                    ->color(fn() => collect([
                         'primary',
                         'secondary',
                         'success',
@@ -99,11 +104,10 @@ class BotResource extends Resource
                     ->label('Lần bot truy cập')
                     ->dateTime('H:i:s d/m/Y')
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('H:i:s d/m/Y'))
-                    ->color(fn ($state) => FunctionHelp::timeBadgeColor($state)) // Đảm bảo $state là giá trị gốc
+                    ->formatStateUsing(fn($state) => \Carbon\Carbon::parse($state)->format('H:i:s d/m/Y'))
+                    ->color(fn($state) => FunctionHelp::timeBadgeColor($state)) // Đảm bảo $state là giá trị gốc
                     ->badge(),
             ])
-
             ->filters([
                 //
             ])

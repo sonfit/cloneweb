@@ -93,11 +93,19 @@ class MucTieuResource extends Resource
 
                 Tables\Columns\TextColumn::make('phanloai')
                     ->label('Phân loại')
-                    ->formatStateUsing(fn($state) => trans('options.phanloai.' . $state, [], 'Chưa xác định')),
+                    ->formatStateUsing(
+                        fn ($state) => trans("options.phanloai.$state") !== "options.phanloai.$state"
+                            ? trans("options.phanloai.$state")
+                            : 'Chưa xác định'
+                    ),
 
                 Tables\Columns\TextColumn::make('type')
                     ->label('Nguồn')
-                    ->formatStateUsing(fn($state) => trans('options.sources.' . $state, [], 'Chưa xác định')),
+                    ->formatStateUsing(
+                        fn ($state) => trans("options.sources.$state") !== "options.sources.$state"
+                            ? trans("options.sources.$state")
+                            : 'Chưa xác định'
+                    ),
 
 
                 Tables\Columns\TextColumn::make('time_crawl')

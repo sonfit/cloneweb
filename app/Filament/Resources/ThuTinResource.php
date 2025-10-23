@@ -160,10 +160,15 @@ class ThuTinResource extends Resource
                             ->modalSubmitAction(false)
                     ),
 
-                // Phân loại
+//                 Phân loại
                 Tables\Columns\TextColumn::make('phanloai')
                     ->label('Phân loại')
-                    ->formatStateUsing(fn($state) => trans('options.phanloai.' . $state, [], 'Chưa phân loại'))
+                    ->formatStateUsing(
+                        fn ($state) => trans("options.phanloai.$state") !== "options.phanloai.$state"
+                            ? trans("options.phanloai.$state")
+                            : 'Chưa xác định'
+                    )
+//                    ->formatStateUsing(fn($state) => trans('options.phanloai.' . $state, [], 'Chưa phân loại'))
                     ->badge()
                     ->color(fn($state) => match ($state) {
                         1, 2 => 'danger',
@@ -182,7 +187,11 @@ class ThuTinResource extends Resource
                         'warning'  => 4,
                         'danger'    => 5,
                     ])
-                    ->formatStateUsing(fn($state) => trans('options.levels.' . $state, [], 'Chưa xác định'))
+                    ->formatStateUsing(
+                        fn ($state) => trans("options.levels.$state") !== "options.levels.$state"
+                            ? trans("options.levels.$state")
+                            : 'Chưa xác định'
+                    )
                     ->sortable(),
 
                 Tables\Columns\TagsColumn::make('tags')

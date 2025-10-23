@@ -28,16 +28,32 @@ class ThuTin extends Model
     {
         static::deleting(function ($record) {
             if ($record->pic) {
-                Storage::disk('public')->delete($record->pic); // pic là array => ok
+                Storage::disk('public')->delete($record->pic);
             }
         });
 
+//        static::updating(function ($record) {
+//            if ($record->isDirty('pic')) {
+//                $oldPic = json_decode($record->getOriginal('pic'), true); // convert JSON -> array
+//                $newPic = $record->pic ?? [];
+//
+//                // Xóa những file cũ không còn trong danh sách mới
+//                $toDelete = array_diff($oldPic ?? [], $newPic);
+//                if (!empty($toDelete)) {
+//                    Storage::disk('public')->delete($toDelete);
+//                }
+//            }
+//        });
+
         static::updating(function ($record) {
             if ($record->isDirty('pic')) {
-                $oldPic = json_decode($record->getOriginal('pic'), true); // convert JSON -> array
+                $oldPic = $record->getOriginal('pic');
+                if (is_string($oldPic)) {
+                    $oldPic = json_decode($oldPic, true);
+                }
+
                 $newPic = $record->pic ?? [];
 
-                // Xóa những file cũ không còn trong danh sách mới
                 $toDelete = array_diff($oldPic ?? [], $newPic);
                 if (!empty($toDelete)) {
                     Storage::disk('public')->delete($toDelete);

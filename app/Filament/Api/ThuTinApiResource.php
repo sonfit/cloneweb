@@ -69,7 +69,6 @@ class ThuTinApiResource
                 'level'         => 'integer|min:1|max:5',
                 'time'          => 'nullable|date',
                 'link_muc_tieu' => 'required|string|max:150',
-                'ten_muc_tieu'  => 'required|string|max:150',
             ], [
                 'link.required'         => 'Link bài viết là bắt buộc.',
                 'link.string'           => 'Link phải là chuỗi ký tự.',
@@ -84,14 +83,13 @@ class ThuTinApiResource
                 'id_bot.exists'         => 'id_bot không tồn tại trong bảng bots.',
                 'id_user.exists'        => 'id_user không tồn tại trong bảng users.',
                 'link_muc_tieu.required'=> 'Link mục tiêu là bắt buộc.',
-                'ten_muc_tieu.required' => 'Tên mục tiêu là bắt buộc.',
             ]);
 
             // 2. Xử lý bảng Mục Tiêu
             $mucTieu = MucTieu::firstOrCreate(
                 ['link' => $data['link_muc_tieu']],
                 [
-                    'name'       => $data['ten_muc_tieu'],
+                    'name'       => $data['ten_muc_tieu'] ?? '(Không có tên)',
                     'time_crawl' => $data['time'] ?? null,
                 ]
             );
@@ -100,12 +98,12 @@ class ThuTinApiResource
                 $newTime = Carbon::parse($data['time']);
                 if (!$mucTieu->time_crawl || $newTime->greaterThan($mucTieu->time_crawl)) {
                     $mucTieu->update([
-                        'name'       => $data['ten_muc_tieu'],
+                        'name'       => $data['ten_muc_tieu'] ?? $mucTieu->name,
                         'time_crawl' => $newTime,
                     ]);
                 } else {
                     $mucTieu->update([
-                        'name' => $data['ten_muc_tieu'],
+                        'name' => $data['ten_muc_tieu'] ?? $mucTieu->name,
                     ]);
                 }
             }
@@ -288,70 +286,6 @@ class ThuTinApiResource
             'file'    => $e->getFile(),
             'line'    => $e->getLine(),
         ], $status);
-    }
-
-    public function upload1(Request $request)
-    {
-        Log::info('Received file upload request', [
-            'file' => $request->hasFile('file') ? $request->file('file')->getClientOriginalName() : 'No file'
-        ]);
-
-        try {
-            $request->validate([
-                'file' => 'required|mimes:jpeg,png,gif,bmp,webp,mp4,mov,avi,mkv,webm|max:512000'
-                // ảnh ≤ 20MB, video cho phép lớn hơn (ở đây set max 50MB)
-            ]);
-
-            $file = $request->file('file');
-            $date = now()->format('Ymd');
-            $directory = "uploads/thutin/{$date}";
-            Storage::disk('public')->makeDirectory($directory);
-
-            $extension = strtolower($file->getClientOriginalExtension());
-            $isImage = in_array($extension, ['jpeg', 'jpg', 'png', 'gif', 'bmp', 'webp']);
-
-            if ($isImage) {
-                // Ảnh → convert sang WebP
-                $fileName = time() . '_' . uniqid() . '.webp';
-                $path = $directory . '/' . $fileName;
-
-                $image = Image::make($file)->encode('webp', 80);
-                Storage::disk('public')->put($path, $image);
-            } else {
-                // Video → giữ nguyên extension
-                $fileName = time() . '_' . uniqid() . '.' . $extension;
-                $path = $directory . '/' . $fileName;
-
-                Storage::disk('public')->putFileAs($directory, $file, $fileName);
-            }
-
-            return response()->json([
-                'status' => 'success',
-                'path'   => $path
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('File upload validation failed', [
-                'errors' => $e->errors(),
-                'file'   => $request->hasFile('file') ? $request->file('file')->getClientOriginalName() : 'No file'
-            ]);
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'Validation failed',
-                'errors'  => $e->errors(),
-                'file'    => $request->hasFile('file') ? $request->file('file')->getClientOriginalName() : 'No file'
-            ], 422);
-        } catch (\Exception $e) {
-            Log::error('File upload error', [
-                'error' => $e->getMessage(),
-                'file'  => $request->hasFile('file') ? $request->file('file')->getClientOriginalName() : 'No file'
-            ]);
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'An unexpected error occurred',
-                'error'   => $e->getMessage(),
-                'file'    => $request->hasFile('file') ? $request->file('file')->getClientOriginalName() : 'No file'
-            ], 500);
-        }
     }
 
     public function upload(Request $request)
