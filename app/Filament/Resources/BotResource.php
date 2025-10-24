@@ -8,12 +8,15 @@ use App\Models\Bot;
 use App\Models\MucTieu;
 use App\Services\FunctionHelp;
 use Filament\Forms;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
 
 class BotResource extends Resource
@@ -30,40 +33,90 @@ class BotResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('ten_bot')
-                    ->label('Tên Bot')
-                    ->required()
-                    ->maxLength(150)
-                    ->unique(ignoreRecord: true),
+                Section::make('Thông tin cơ bản')
+                    ->schema([
+                        Grid::make()
+                            ->columns([
+                                'default' => 3,
+                                'sm' => 3,
+                                'md' => 3,
+                                'lg' => 3,
+                                'xl' => 3,
+                                '2xl' => 3,
+                            ])
+                            ->schema([
+                                Forms\Components\TextInput::make('ten_bot')
+                                    ->label('Tên Bot')
+                                    ->required()
+                                    ->maxLength(150)
+                                    ->unique(ignoreRecord: true),
 
-                Forms\Components\TextInput::make('loai_bot')
-                    ->label('Loại Bot')
-                    ->maxLength(150)
-                    ->required(),
+                                Forms\Components\TextInput::make('loai_bot')
+                                    ->label('Loại Bot')
+                                    ->maxLength(150)
+                                    ->required(),
 
-                Forms\Components\TextInput::make('lenh_bot')
-                    ->label('Lệnh Bot')
-                    ->maxLength(150)
-                    ->required(),
-
-                Forms\Components\Select::make('mucTieus')
-                    ->multiple()
-                    ->label('Mục tiêu')
-                    ->relationship('mucTieus', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->nullable()
-                    ->getOptionLabelFromRecordUsing(function ($record) {
-                    $sourceKey = 'options.sources.' . $record->type;
-                    $source = Lang::has($sourceKey) ? trans($sourceKey) : 'Không rõ';
-                    return $source . ' - ' . ($record->name ?? 'Không rõ');
-                }),
+                                Forms\Components\TextInput::make('lenh_bot')
+                                    ->label('Lệnh Bot')
+                                    ->maxLength(150)
+                                    ->required(),
+                            ]),
+                    ]),
 
 
-                Forms\Components\Textarea::make('ghi_chu')
-                    ->label('Ghi chú')
-                    ->maxLength(1000)
-                    ->rows(6),
+
+
+                Section::make('Mục tiêu')
+                    ->description('Chọn các mục tiêu mà bot sẽ theo dõi')
+                    ->schema([
+                        Forms\Components\Tabs::make('Mục tiêu')
+                            ->contained()
+                            ->tabs(function () {
+                                $mucTieus = MucTieu::all()->groupBy('type');
+                                $tabs = [];
+
+                                foreach ($mucTieus as $type => $items) {
+                                    $typeLabel = Lang::has('options.type.' . $type)
+                                        ? trans('options.type.' . $type)
+                                        : 'Không rõ';
+
+                                    $options = $items->mapWithKeys(function ($item) {
+                                        return [$item->id => $item->name ?? 'Không rõ'];
+                                    })->toArray();
+
+                                    $tabs[] = Forms\Components\Tabs\Tab::make($typeLabel)
+                                        ->badge(count($options))
+                                        ->schema([
+                                            Forms\Components\CheckboxList::make('mucTieus')
+                                                ->label('')
+                                                ->relationship('mucTieus', 'name')
+                                                ->options($options)
+                                                ->searchable()
+                                                ->columns(3)
+                                                ->gridDirection('row')
+                                                ->bulkToggleable(),
+                                        ]);
+                                }
+
+                                return $tabs;
+                            })
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsible()
+                    ->collapsed(false),
+
+                Section::make('Ghi chú')
+                    ->description('Thêm ghi chú hoặc mô tả chi tiết về bot')
+                    ->schema([
+                        Forms\Components\Textarea::make('ghi_chu')
+                            ->label('Ghi chú')
+                            ->maxLength(1000)
+                            ->rows(4)
+                            ->placeholder('Nhập ghi chú về bot...')
+                            ->columnSpanFull(),
+                    ])
+                    ->collapsible()
+                    ->collapsed(false),
             ]);
     }
 
@@ -85,20 +138,31 @@ class BotResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('mucTieus.name')
+                Tables\Columns\TagsColumn::make('mucTieus.name')
                     ->label('Mục tiêu')
-                    ->badge()
+                    ->getStateUsing(function ($record) {
+                        $mucTieus = $record->mucTieus->unique('name')->pluck('name'); // Lấy danh sách tên mục tiêu, loại bỏ trùng lặp
+                        $limit = 4;
+
+                        if ($mucTieus->count() > $limit) {
+                            $extraCount = $mucTieus->count() - $limit;
+                            return $mucTieus->take($limit)->push("+{$extraCount} mục tiêu khác");
+                        }
+                        return $mucTieus;
+                    })
                     ->separator(', ')
-                    ->color(fn() => collect([
-                        'primary',
-                        'secondary',
-                        'success',
-                        'warning',
-                        'danger',
-                        'info',
-                    ])->random())
-                    ->limit(50)
-                    ->searchable(),
+                    ->badge()
+                    ->sortable(query: function ($query, $direction) {
+                        return $query->withCount('mucTieus')->orderBy('mucTieus_count', $direction);
+                    })
+
+                    ->color(function ($record, $state) {
+                        $colors = ['primary', 'success', 'danger', 'info'];
+                        $index = $record->mucTieus->search(function ($item) use ($state) {
+                                return in_array($item->name, (array) $state);
+                            }) % count($colors); // Lấy chỉ số dựa trên vị trí mục tiêu, lặp lại nếu vượt quá
+                        return $colors[$index];
+                    }),
 
                 Tables\Columns\TextColumn::make('time_crawl')
                     ->label('Lần bot truy cập')

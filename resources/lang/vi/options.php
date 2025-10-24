@@ -8,7 +8,7 @@ return [
         4 => 'TTXH ngoài địa bàn',
         5 => 'Dư luận xã hội liên quan CTP',
     ],
-    'sources' => [
+    'type' => [
         1 => 'Facebook cá nhân',
         2 => 'Facebook Fanpage',
         3 => 'Facebook Group',

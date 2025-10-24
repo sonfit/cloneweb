@@ -14,6 +14,7 @@ use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 class ThuTinResource extends Resource
@@ -54,7 +55,9 @@ class ThuTinResource extends Resource
                     ->preload()
                     ->nullable()
                     ->getOptionLabelFromRecordUsing(function ($record) {
-                        return (__('options.sources.' . $record->type, [], 'Không rõ') . ' - ' . $record->name ?? 'Không rõ');
+                        $sourceKey = 'options.type.' . $record->type;
+                        $source = Lang::has($sourceKey) ? trans($sourceKey) : 'Không rõ';
+                        return $source . ' - ' . ($record->name ?? 'Không rõ');
                     }),
 
 
@@ -202,7 +205,7 @@ class ThuTinResource extends Resource
 
                         if ($tags->count() > $limit) {
                             $extraCount = $tags->count() - $limit;
-                            return $tags->take($limit)->push("+{$extraCount}");
+                            return $tags->take($limit)->push("+{$extraCount} Tag");
                         }
                         return $tags;
                     })
@@ -211,10 +214,15 @@ class ThuTinResource extends Resource
                     ->sortable(query: function ($query, $direction) {
                         return $query->withCount('tags')->orderBy('tags_count', $direction);
                     })
-                    ->color('primary')   ->tooltip(function ($record) {
-                        return $record->tags->pluck('tag')->join(', ');
-                    }),
+                    ->color(function ($record, $state) {
+                        $colors = ['primary', 'success', 'danger', 'info'];
+                        $index = $record->tags->search(function ($item) use ($state) {
+//                            dd($state, $item);
 
+                                return in_array($item->tag, (array) $state);
+                            }) % count($colors); // Lấy chỉ số dựa trên vị trí mục tiêu, lặp lại nếu vượt quá
+                        return $colors[$index];
+                    }),
 
                 // Người ghi nhận (user)
                 Tables\Columns\TextColumn::make('bot.ten_bot')

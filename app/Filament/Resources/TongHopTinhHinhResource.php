@@ -10,6 +10,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Storage;
 use Joaopaulolndev\FilamentGeneralSettings\Models\GeneralSetting;
 use OpenAI;
@@ -41,7 +42,9 @@ class TongHopTinhHinhResource extends Resource
                     ->preload()
                     ->nullable()
                     ->getOptionLabelFromRecordUsing(function ($record) {
-                        return (__('options.sources.' . $record->type, [], 'Không rõ') . ' - ' . $record->name ?? 'Không rõ');
+                        $sourceKey = 'options.type.' . $record->type;
+                        $source = Lang::has($sourceKey) ? trans($sourceKey) : 'Không rõ';
+                        return $source . ' - ' . ($record->name ?? 'Không rõ');
                     }),
 
                 Forms\Components\Radio::make('phanloai')
@@ -82,7 +85,7 @@ class TongHopTinhHinhResource extends Resource
                                             return;
                                         }
 
-                                        $soKyTu = (int) $get('so_ky_tu') ?: 100;
+                                        $soKyTu = (int)$get('so_ky_tu') ?: 100;
                                         $summary = static::generateSummary($content, $soKyTu);
                                         $set('sumary', $summary);
                                     })
@@ -183,7 +186,11 @@ class TongHopTinhHinhResource extends Resource
                 // Phân loại
                 Tables\Columns\TextColumn::make('phanloai')
                     ->label('Phân loại')
-                    ->formatStateUsing(fn($state) => trans('options.phanloai.' . $state, [], 'Chưa phân loại'))
+                    ->formatStateUsing(
+                        fn($state) => trans("options.phanloai.$state") !== "options.phanloai.$state"
+                            ? trans("options.phanloai.$state")
+                            : 'Chưa xác định'
+                    )
                     ->badge() // hiển thị badge màu đẹp
                     ->color(fn($state) => match ($state) {
                         1, 2 => 'danger',
@@ -191,6 +198,7 @@ class TongHopTinhHinhResource extends Resource
                         5 => 'info',
                         default => 'gray',
                     }),
+
             ])
             ->filters([])
             ->actions([

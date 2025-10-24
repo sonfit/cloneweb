@@ -51,7 +51,7 @@ class MucTieuResource extends Resource
 
                 Forms\Components\Radio::make('type')
                     ->label('Nguồn')
-                    ->options(__('options.sources'))
+                    ->options(__('options.type'))
                     ->default(1)
                     ->required()
                     ->columns(2)
@@ -102,8 +102,8 @@ class MucTieuResource extends Resource
                 Tables\Columns\TextColumn::make('type')
                     ->label('Nguồn')
                     ->formatStateUsing(
-                        fn ($state) => trans("options.sources.$state") !== "options.sources.$state"
-                            ? trans("options.sources.$state")
+                        fn ($state) => trans("options.type.$state") !== "options.type.$state"
+                            ? trans("options.type.$state")
                             : 'Chưa xác định'
                     ),
 
@@ -133,7 +133,7 @@ class MucTieuResource extends Resource
                     ->options(trans('options.phanloai')),
                 SelectFilter::make('type')
                     ->label('Nguôn')
-                    ->options(trans('options.sources')),
+                    ->options(trans('options.type')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
