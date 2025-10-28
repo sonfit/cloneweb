@@ -18,13 +18,9 @@ class RecentTraceJobsWidget extends BaseWidget
             ->query(
                 TraceJob::query()
                     ->latest('created_at')
-                    ->limit(10)
+                    ->limit(5)
             )
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->searchable()
-                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('payload_sdt')
                     ->label('SDT')
@@ -66,7 +62,7 @@ class RecentTraceJobsWidget extends BaseWidget
                     ->toggleable(),
             ])
             ->heading('Job gần đây')
-            ->description('10 job được xử lý gần đây nhất')
+            ->description('5 job được xử lý gần đây nhất')
             ->paginated(false);
     }
 }

@@ -20,16 +20,19 @@ class LatestThuTinWidget extends BaseWidget
                 ThuTin::query()
                     ->with(['mucTieu', 'bot'])
                     ->latest('created_at')
-                    ->limit(10)
+                    ->limit(5)
             )
             ->columns([
                 Tables\Columns\TextColumn::make('bot.ten_bot')
-                    ->label('Tên Bot'),
+                    ->label('Tên Bot')
+                    ->description(fn($record) => $record->bot->loai_bot ?? null),
 
                 Tables\Columns\TextColumn::make('link')
                     ->label('Link')
                     ->url(fn($record) => $record->link, true)
                     ->limit(50)
+                    ->description(fn($record) => $record->contents_text ? Str::limit($record->contents_text, 50) : '')
+
                     ->wrap()
                     ->searchable(),
 
@@ -75,7 +78,7 @@ class LatestThuTinWidget extends BaseWidget
                     ->dateTime('d/m/Y H:i'),
             ])
             ->heading('Tin tức mới nhất')
-            ->description('10 tin tức được thu thập gần đây nhất')
+            ->description('5 tin tức được thu thập gần đây nhất')
             ->paginated(false);
     }
 }
