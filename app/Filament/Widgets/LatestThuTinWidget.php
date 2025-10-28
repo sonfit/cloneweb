@@ -32,13 +32,15 @@ class LatestThuTinWidget extends BaseWidget
                     ->url(fn($record) => $record->link, true)
                     ->limit(50)
                     ->description(fn($record) => $record->contents_text ? Str::limit($record->contents_text, 50) : '')
-
+                    ->tooltip(fn($record) => $record->contents_text ?? '')
                     ->wrap()
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('mucTieu.name')
                     ->label('Mục tiêu')
                     ->badge()
+                    ->limit(15)
+                    ->tooltip(fn($record) => $record->mucTieu->name ?? '')
                     ->color('info'),
 
                 Tables\Columns\TextColumn::make('phanloai')
