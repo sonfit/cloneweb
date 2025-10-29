@@ -306,6 +306,15 @@ class ThuTinResource extends Resource
                     })
                     ->form(function () {
                         return [
+                            Forms\Components\TagsInput::make('foreign_names')
+                                ->label('Bookmark của người khác')
+                                ->disabled()
+                                ->dehydrated(false)
+                                ->visible(function (\Filament\Forms\Get $get) {
+                                    $user = auth()->user();
+                                    $isAdmin = $user && $user->hasAnyRole(['admin', 'super_admin']);
+                                    return !$isAdmin && filled($get('foreign_names'));
+                                }),
                             Forms\Components\Select::make('bookmark_ids')
                                 ->label('Chọn bookmark')
                                 ->multiple()
@@ -319,7 +328,6 @@ class ThuTinResource extends Resource
                                         ->when(!$isAdmin, fn($q) => $q->where('user_id', $user->id))
                                         ->with('user')
                                         ->latest()
-                                        ->limit(50)
                                         ->get()
                                         ->mapWithKeys(function ($b) use ($isAdmin) {
                                             $date = $b->created_at?->format('d/m/Y H:i');
@@ -339,7 +347,6 @@ class ThuTinResource extends Resource
                                         ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
                                         ->with('user')
                                         ->latest()
-                                        ->limit(50)
                                         ->get()
                                         ->mapWithKeys(function ($b) use ($isAdmin) {
                                             $date = $b->created_at?->format('d/m/Y H:i');
@@ -350,16 +357,18 @@ class ThuTinResource extends Resource
                                         })
                                         ->toArray();
                                 })
-                                ->getOptionLabelUsing(function ($value) {
-                                    if (!$value) return null;
+                                ->getOptionLabelsUsing(function (array $values) {
                                     $user = auth()->user();
                                     $isAdmin = $user->hasAnyRole(['admin', 'super_admin']);
-                                    $b = Bookmark::with('user')->find($value);
-                                    if (!$b) return null;
-                                    $date = $b->created_at?->format('d/m/Y H:i');
-                                    return $isAdmin
-                                        ? ($b->name . ' - (' . ($b->user?->name ?? 'user') . ') - ' . $date)
-                                        : ($b->name . ' - ' . $date);
+                                    $bookmarks = Bookmark::with('user')->whereIn('id', $values)->get();
+                                    $labels = [];
+                                    foreach ($bookmarks as $b) {
+                                        $date = $b->created_at?->format('d/m/Y H:i');
+                                        $labels[$b->id] = $isAdmin
+                                            ? ($b->name . ' - (' . ($b->user?->name ?? 'user') . ') - ' . $date)
+                                            : ($b->name . ' - ' . $date);
+                                    }
+                                    return $labels;
                                 })
                                 ->createOptionForm([
                                     Forms\Components\TextInput::make('name')
@@ -379,20 +388,57 @@ class ThuTinResource extends Resource
                         ];
                     })
                     ->mountUsing(function (\Filament\Forms\ComponentContainer $form, ThuTin $record) {
+                        $bookmarks = $record->bookmarks()->with('user')->get();
+                        $user = auth()->user();
+                        $isAdmin = $user && $user->hasAnyRole(['admin', 'super_admin']);
+                        if ($isAdmin) {
+                            $form->fill([
+                                'bookmark_ids' => $bookmarks->pluck('id')->toArray(),
+                                'foreign_names' => null,
+                            ]);
+                            return;
+                        }
+                        $own = $bookmarks->where('user_id', $user->id);
+                        $foreign = $bookmarks->where('user_id', '!=', $user->id);
+                        $ownIds = $own->pluck('id')->toArray();
+                        $foreignNames = $foreign->map(function ($b) {
+                            $date = $b->created_at?->format('d/m/Y H:i');
+                            return $b->name . ' - ' . $date;
+                        })->values()->toArray();
+
                         $form->fill([
-                            'bookmark_ids' => $record->bookmarks()->pluck('bookmarks.id')->toArray(),
+                            'bookmark_ids' => $ownIds,
+                            'foreign_names' => $foreignNames,
                         ]);
                     })
                     ->action(function (ThuTin $record, array $data) {
                         $user = auth()->user();
                         $selectedIds = collect($data['bookmark_ids'] ?? [])->map(fn($v) => (int)$v)->unique()->values();
                         $isAdmin = $user->hasAnyRole(['admin', 'super_admin']);
-                        $allowedIds = Bookmark::query()
-                            ->when(!$isAdmin, fn($q) => $q->where('user_id', $user->id))
+
+                        if ($isAdmin) {
+                            $record->bookmarks()->sync($selectedIds);
+                            return;
+                        }
+
+                        $currentUserId = $user->id;
+                        $existingOwn = $record->bookmarks()
+                            ->where('bookmarks.user_id', $currentUserId)
+                            ->pluck('bookmarks.id');
+                        $selectedOwn = Bookmark::query()
+                            ->where('user_id', $currentUserId)
                             ->whereIn('id', $selectedIds)
                             ->pluck('id');
 
-                        $record->bookmarks()->sync($allowedIds);
+                        $toAttach = $selectedOwn->diff($existingOwn);
+                        $toDetach = $existingOwn->diff($selectedOwn);
+
+                        if ($toAttach->isNotEmpty()) {
+                            $record->bookmarks()->syncWithoutDetaching($toAttach->all());
+                        }
+                        if ($toDetach->isNotEmpty()) {
+                            $record->bookmarks()->detach($toDetach->all());
+                        }
                     })
                     ->successNotificationTitle('Đã cập nhật bookmark')
                     ->visible(fn() => auth()->check())
