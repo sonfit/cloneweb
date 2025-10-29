@@ -70,4 +70,9 @@ class ThuTin extends Model
             ->using(TagThuTin::class) // dùng Pivot model
             ->withPivot('tag_id', 'thu_tin_id');
     }
+
+    public function bookmarks()
+    {
+        return $this->belongsToMany(Bookmark::class, 'bookmark_thu_tin')->withTimestamps();
+    }
 }

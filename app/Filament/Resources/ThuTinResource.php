@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ThuTinResource\Pages;
 use App\Models\ThuTin;
+use App\Models\Bookmark;
 use App\Services\FunctionHelp;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Facades\Filament;
@@ -120,6 +121,7 @@ class ThuTinResource extends Resource
         return $table
             ->modifyQueryUsing(function ($query) {
                 $user = auth()->user();
+                $query->with(['bookmarks.user'])->withCount('bookmarks');
                 
                 // Nếu user có quyền admin hoặc super_admin thì xem tất cả
                 if ($user->hasAnyRole(['admin', 'super_admin'])) {
@@ -294,6 +296,108 @@ class ThuTinResource extends Resource
                     }),
             ])
             ->actions([
+                Tables\Actions\Action::make('bookmark')
+                    ->label('Bookmark')
+                    ->icon('heroicon-o-bookmark')
+                    ->color(fn(\App\Models\ThuTin $record) => ($record->bookmarks_count ?? $record->bookmarks()->count()) > 0 ? 'success' : 'gray')
+                    ->tooltip(function (\App\Models\ThuTin $record) {
+                        $names = $record->bookmarks?->pluck('name') ?? collect();
+                        return $names->isNotEmpty() ? $names->join(', ') : 'Chưa có bookmark';
+                    })
+                    ->form(function () {
+                        return [
+                            Forms\Components\Select::make('bookmark_ids')
+                                ->label('Chọn bookmark')
+                                ->multiple()
+                                ->searchable()
+                                ->preload()
+                                ->options(function () {
+                                    $user = auth()->user();
+                                    $isAdmin = $user->hasAnyRole(['admin', 'super_admin']);
+
+                                    return Bookmark::query()
+                                        ->when(!$isAdmin, fn($q) => $q->where('user_id', $user->id))
+                                        ->with('user')
+                                        ->latest()
+                                        ->limit(50)
+                                        ->get()
+                                        ->mapWithKeys(function ($b) use ($isAdmin) {
+                                            $date = $b->created_at?->format('d/m/Y H:i');
+                                            $label = $isAdmin
+                                                ? ($b->name . ' - (' . ($b->user?->name ?? 'user') . ') - ' . $date)
+                                                : ($b->name . ' - ' . $date);
+                                            return [$b->id => $label];
+                                        })
+                                        ->toArray();
+                                })
+                                ->getSearchResultsUsing(function (string $search) {
+                                    $user = auth()->user();
+                                    $isAdmin = $user->hasAnyRole(['admin', 'super_admin']);
+
+                                    return Bookmark::query()
+                                        ->when(!$isAdmin, fn($q) => $q->where('user_id', $user->id))
+                                        ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
+                                        ->with('user')
+                                        ->latest()
+                                        ->limit(50)
+                                        ->get()
+                                        ->mapWithKeys(function ($b) use ($isAdmin) {
+                                            $date = $b->created_at?->format('d/m/Y H:i');
+                                            $label = $isAdmin
+                                                ? ($b->name . ' - (' . ($b->user?->name ?? 'user') . ') - ' . $date)
+                                                : ($b->name . ' - ' . $date);
+                                            return [$b->id => $label];
+                                        })
+                                        ->toArray();
+                                })
+                                ->getOptionLabelUsing(function ($value) {
+                                    if (!$value) return null;
+                                    $user = auth()->user();
+                                    $isAdmin = $user->hasAnyRole(['admin', 'super_admin']);
+                                    $b = Bookmark::with('user')->find($value);
+                                    if (!$b) return null;
+                                    $date = $b->created_at?->format('d/m/Y H:i');
+                                    return $isAdmin
+                                        ? ($b->name . ' - (' . ($b->user?->name ?? 'user') . ') - ' . $date)
+                                        : ($b->name . ' - ' . $date);
+                                })
+                                ->createOptionForm([
+                                    Forms\Components\TextInput::make('name')
+                                        ->label('Tên bookmark')
+                                        ->required()
+                                        ->maxLength(255),
+                                ])
+                                ->createOptionUsing(function (array $data) {
+                                    $user = auth()->user();
+                                    $bookmark = Bookmark::create([
+                                        'user_id' => $user->id,
+                                        'name' => $data['name'] ?? '',
+                                    ]);
+                                    return $bookmark->id;
+                                })
+                                ->nullable(),
+                        ];
+                    })
+                    ->mountUsing(function (\Filament\Forms\ComponentContainer $form, ThuTin $record) {
+                        $form->fill([
+                            'bookmark_ids' => $record->bookmarks()->pluck('bookmarks.id')->toArray(),
+                        ]);
+                    })
+                    ->action(function (ThuTin $record, array $data) {
+                        $user = auth()->user();
+                        $selectedIds = collect($data['bookmark_ids'] ?? [])->map(fn($v) => (int)$v)->unique()->values();
+                        $isAdmin = $user->hasAnyRole(['admin', 'super_admin']);
+                        $allowedIds = Bookmark::query()
+                            ->when(!$isAdmin, fn($q) => $q->where('user_id', $user->id))
+                            ->whereIn('id', $selectedIds)
+                            ->pluck('id');
+
+                        $record->bookmarks()->sync($allowedIds);
+                    })
+                    ->successNotificationTitle('Đã cập nhật bookmark')
+                    ->visible(fn() => auth()->check())
+                    ->modalHeading('Thêm vào bookmark')
+                    ->modalSubmitActionLabel('Lưu'),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])

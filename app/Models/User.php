@@ -81,4 +81,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(MucTieu::class, 'user_muc_tieu');
     }
+
+    public function bookmarks()
+    {
+        return $this->hasMany(Bookmark::class);
+    }
 }
