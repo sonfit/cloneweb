@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\ThuTin;
+use App\Services\FunctionHelp;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -58,21 +59,16 @@ class LatestThuTinWidget extends BaseWidget
                         default => 'gray',
                     }),
 
-                Tables\Columns\TextColumn::make('level')
+                Tables\Columns\TextColumn::make('diem')
                     ->label('Mức độ')
                     ->badge()
-                    ->formatStateUsing(
-                        fn ($state) => trans("options.levels.$state") !== "options.levels.$state"
-                            ? trans("options.levels.$state")
-                            : 'Chưa xác định'
-                    )
-                    ->color(fn($state) => match($state) {
-                        1 => 'gray',
-                        2 => 'info',
-                        3 => 'success',
-                        4 => 'warning',
-                        5 => 'danger',
-                        default => 'gray',
+                    ->formatStateUsing(function ($state) {
+                        $level = FunctionHelp::diemToLevel($state);
+                        return "Level {$level} ({$state} điểm)";
+                    })
+                    ->color(function ($state) {
+                        $level = FunctionHelp::diemToLevel($state);
+                        return FunctionHelp::levelBadgeColor($level);
                     }),
 
                 Tables\Columns\TextColumn::make('time')

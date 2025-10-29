@@ -28,10 +28,10 @@ class ListTags extends ListRecords
                 ->modalWidth('lg')
                 ->form([
                     Forms\Components\Textarea::make('tags_input')
-                        ->label('Danh sách Tag (JSON hoặc mỗi dòng một tag, ví dụ: "Hà Nội|10" hoặc "Hà Nội")')
+                        ->label('Danh sách Tag')
                         ->rows(10)
                         ->required()
-                        ->helperText('Hỗ trợ định dạng JSON (ví dụ: [{"tag": "Hà Nội", "diem": 10}]) hoặc danh sách tag (mỗi dòng một tag). Điểm từ 1-10, mặc định 0 nếu không nhập điểm.'),
+                        ->helperText('Định dạng: Nhóm phân loại|Tên tag|Điểm (mỗi dòng một tag).'),
                 ])
                 ->action(function (array $data): void {
                     $input = trim($data['tags_input'] ?? '');
@@ -45,36 +45,39 @@ class ListTags extends ListRecords
                     }
 
                     $items = [];
-                    // Thử sửa JSON không hợp lệ (bọc trong [] nếu cần)
-                    $jsonInput = $input;
+                    $lines = preg_split('/\r\n|\r|\n/', $input);
 
-                    // Thử decode JSON
-                    $jsonData = json_decode($jsonInput, true);
-                    if (json_last_error() === JSON_ERROR_NONE && is_array($jsonData)) {
-                        $items = $jsonData;
-                    } else {
-                        // Nếu không phải JSON, parse theo dòng
-                        $lines = preg_split('/\r\n|\r|\n/', $input);
-                        foreach ($lines as $line) {
-                            $line = trim($line);
-                            if (empty($line)) continue;
+                    foreach ($lines as $line) {
+                        $line = trim($line);
+                        if (empty($line)) continue;
 
-                            // Hỗ trợ: "Tag|10", "Tag - 10", hoặc chỉ "Tag"
-                            if (preg_match('/^(.+?)\s*[\|\-]\s*(\d{1,2})$/u', $line, $matches)) {
-                                $tag = trim($matches[1]);
-                                $diem = (int)$matches[2];
-                                if ($diem < 1 || $diem > 10) {
-                                    Notification::make()
-                                        ->title('Lỗi')
-                                        ->body("Điểm của tag '$tag' phải từ 1 đến 10.")
-                                        ->danger()
-                                        ->send();
-                                    return;
-                                }
-                                $items[] = ['tag' => $tag, 'diem' => $diem];
-                            } else {
-                                $items[] = ['tag' => $line, 'diem' => 0];
+                        // Định dạng: "Nhóm|Tên tag|Điểm" hoặc "Nhóm|Tên tag"
+                        if (preg_match('/^(.+?)\|(.+?)(?:\|(\d+))?$/u', $line, $matches)) {
+                            $parent = trim($matches[1]);
+                            $tag = trim($matches[2]);
+                            $diem = isset($matches[3]) ? (int)$matches[3] : 0;
+
+                            if ($diem < 0 || $diem > 100) {
+                                Notification::make()
+                                    ->title('Lỗi')
+                                    ->body("Điểm của tag '$tag' phải từ 0 đến 100.")
+                                    ->danger()
+                                    ->send();
+                                return;
                             }
+
+                            $items[] = [
+                                'tag' => $tag,
+                                'diem' => $diem,
+                                'parent' => $parent
+                            ];
+                        } else {
+                            Notification::make()
+                                ->title('Lỗi')
+                                ->body("Định dạng không hợp lệ: '$line'. Định dạng đúng: Nhóm|Tên tag|Điểm")
+                                ->danger()
+                                ->send();
+                            return;
                         }
                     }
 
@@ -82,45 +85,47 @@ class ListTags extends ListRecords
                     if (empty($items)) {
                         Notification::make()
                             ->title('Lỗi')
-                            ->body('Không tìm thấy tag hợp lệ. Vui lòng kiểm tra định dạng JSON hoặc danh sách dòng.')
+                            ->body('Không tìm thấy tag hợp lệ.')
                             ->danger()
                             ->send();
                         return;
                     }
 
                     $created = 0;
-                    $skipped = 0;
+                    $updated = 0;
                     DB::beginTransaction();
                     try {
                         foreach ($items as $item) {
-                            if (!is_array($item) || empty(trim($item['tag'] ?? ''))) continue;
+                            $tagName = $item['tag'];
+                            $diem = $item['diem'];
+                            $parent = $item['parent'];
 
-                            $tagName = trim($item['tag']);
-                            $diem = isset($item['diem']) ? (int)$item['diem'] : 0;
+                            // Kiểm tra tag đã tồn tại, nếu có thì update, nếu không thì create
+                            $existingTag = Tag::where('tag', $tagName)->first();
 
-                            // Kiểm tra điểm hợp lệ (1-10) cho JSON input
-                            if ($diem < 0 || $diem > 10) {
-                                throw new \Exception("Điểm của tag '$tagName' phải từ 1 đến 10.");
+                            if ($existingTag) {
+                                // Update tag đã tồn tại
+                                $existingTag->update([
+                                    'diem' => $diem,
+                                    'parent' => $parent,
+                                ]);
+                                $updated++;
+                            } else {
+                                // Create tag mới
+                                Tag::create([
+                                    'tag' => $tagName,
+                                    'diem' => $diem,
+                                    'parent' => $parent,
+                                ]);
+                                $created++;
                             }
-
-                            // Kiểm tra tag đã tồn tại
-                            if (Tag::where('tag', $tagName)->exists()) {
-                                $skipped++;
-                                continue;
-                            }
-
-                            Tag::create([
-                                'tag' => $tagName,
-                                'diem' => $diem,
-                            ]);
-                            $created++;
                         }
 
                         DB::commit();
 
-                        $message = "Đã thêm {$created} tag.";
-                        if ($skipped > 0) {
-                            $message .= " Bỏ qua {$skipped} tag trùng lặp.";
+                        $message = "Đã thêm {$created} tag mới.";
+                        if ($updated > 0) {
+                            $message .= " Cập nhật {$updated} tag đã tồn tại.";
                         }
 
                         Notification::make()
@@ -138,6 +143,62 @@ class ListTags extends ListRecords
                     }
                 }),
 
+            Actions\Action::make('changeDiemByParent')
+                ->label('Thay đổi điểm theo nhóm')
+                ->icon('heroicon-o-adjustments-horizontal')
+                ->color('success')
+                ->modalHeading('Thay đổi điểm hàng loạt theo nhóm')
+                ->form([
+                    Forms\Components\Select::make('parents')
+                        ->label('Chọn nhóm phân loại')
+                        ->options(function () {
+                            return Tag::whereNotNull('parent')
+                                ->distinct()
+                                ->pluck('parent', 'parent')
+                                ->toArray();
+                        })
+                        ->multiple()
+                        ->searchable()
+                        ->preload()
+                        ->required()
+                        ->helperText('Chọn một hoặc nhiều nhóm để thay đổi điểm cho TẤT CẢ tags thuộc nhóm đó'),
+
+                    Forms\Components\TextInput::make('new_diem')
+                        ->label('Điểm mới')
+                        ->numeric()
+                        ->minValue(0)
+                        ->maxValue(100)
+                        ->required()
+                        ->helperText('Điểm sẽ được áp dụng cho tất cả tags thuộc các nhóm đã chọn'),
+                ])
+                ->action(function (array $data): void {
+                    $selectedParents = $data['parents'];
+                    $newDiem = $data['new_diem'];
+                    $count = 0;
+
+                    DB::beginTransaction();
+                    try {
+                        foreach ($selectedParents as $parent) {
+                            $updated = Tag::where('parent', $parent)->update(['diem' => $newDiem]);
+                            $count += $updated;
+                        }
+
+                        DB::commit();
+
+                        Notification::make()
+                            ->title('Thành công')
+                            ->body("Đã cập nhật điểm cho {$count} tag thuộc " . count($selectedParents) . " nhóm.")
+                            ->success()
+                            ->send();
+                    } catch (\Throwable $e) {
+                        DB::rollBack();
+                        Notification::make()
+                            ->title('Lỗi')
+                            ->body($e->getMessage())
+                            ->danger()
+                            ->send();
+                    }
+                }),
 
         ];
     }

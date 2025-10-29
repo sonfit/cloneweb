@@ -69,11 +69,11 @@ class ThuTinResource extends Resource
                     ->columns(2)
                     ->extraAttributes(['style' => 'margin-left: 50px;']),
 
-                Forms\Components\Radio::make('level')
-                    ->label('Mức độ quan trọng')
-                    ->options(__('options.levels'))
-                    ->default(1)
-                    ->extraAttributes(['style' => 'margin-left: 50px;'])
+                Forms\Components\TextInput::make('diem')
+                    ->label('Điểm')
+                    ->numeric()
+                    ->default(0)
+                    ->minValue(0)
                     ->required(),
 
                 Forms\Components\Textarea::make('contents_text')
@@ -180,21 +180,17 @@ class ThuTinResource extends Resource
                         default => 'gray',
                     }),
 
-                Tables\Columns\TextColumn::make('level')
+                Tables\Columns\TextColumn::make('diem')
                     ->label('Mức độ')
                     ->badge()
-                    ->colors([
-                        'gray' => 1,
-                        'info'    => 2,
-                        'success' => 3,
-                        'warning'  => 4,
-                        'danger'    => 5,
-                    ])
-                    ->formatStateUsing(
-                        fn ($state) => trans("options.levels.$state") !== "options.levels.$state"
-                            ? trans("options.levels.$state")
-                            : 'Chưa xác định'
-                    )
+                    ->formatStateUsing(function ($state) {
+                        $level = FunctionHelp::diemToLevel($state);
+                        return "Level {$level} ({$state} điểm)";
+                    })
+                    ->color(function ($state) {
+                        $level = FunctionHelp::diemToLevel($state);
+                        return FunctionHelp::levelBadgeColor($level);
+                    })
                     ->sortable(),
 
                 Tables\Columns\TagsColumn::make('tags')
@@ -253,9 +249,22 @@ class ThuTinResource extends Resource
                     ->label('Phân loại')
                     ->options(trans('options.phanloai')),
 
-                SelectFilter::make('level')
-                    ->label('Mức độ')
-                    ->options(trans('options.levels')),
+                Tables\Filters\Filter::make('diem')
+                    ->form([
+                        Forms\Components\TextInput::make('diem_from')
+                            ->label('Điểm từ')
+                            ->numeric()
+                            ->placeholder('0'),
+                        Forms\Components\TextInput::make('diem_to')
+                            ->label('Điểm đến')
+                            ->numeric()
+                            ->placeholder('100'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['diem_from'], fn ($query, $from) => $query->where('diem', '>=', $from))
+                            ->when($data['diem_to'], fn ($query, $to) => $query->where('diem', '<=', $to));
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

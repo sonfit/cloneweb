@@ -66,7 +66,7 @@ class ThuTinApiResource
                 'pic'           => 'nullable|array',
                 'pic.*'         => 'string',
                 'phanloai'      => 'nullable|integer',
-                'level'         => 'integer|min:1|max:5',
+                'diem'          => 'integer|min:0',
                 'time'          => 'nullable|date',
                 'link_muc_tieu' => 'required|string|max:150',
             ], [
@@ -76,9 +76,8 @@ class ThuTinApiResource
                 'contents_text.string'  => 'Nội dung bài viết phải là chuỗi ký tự.',
                 'pic.string'            => 'Tên file ảnh phải là chuỗi.',
                 'phanloai.integer'      => 'Phân loại phải là số nguyên.',
-                'level.integer'         => 'Mức độ phải là số nguyên.',
-                'level.min'             => 'Mức độ tối thiểu là 1.',
-                'level.max'             => 'Mức độ tối đa là 5.',
+                'diem.integer'          => 'Điểm phải là số nguyên.',
+                'diem.min'              => 'Điểm tối thiểu là 0.',
                 'time.date'             => 'Trường time phải là ngày giờ hợp lệ (YYYY-MM-DD HH:MM:SS).',
                 'id_bot.exists'         => 'id_bot không tồn tại trong bảng bots.',
                 'id_user.exists'        => 'id_user không tồn tại trong bảng users.',
@@ -137,7 +136,7 @@ class ThuTinApiResource
                 $existingByLink->update($data);
 
                 $result = FunctionHelp::chamDiemTuKhoa($existingByLink->contents_text);
-                $existingByLink->update(['level' => $result['level']]);
+                $existingByLink->update(['diem' => $result['diem']]);
 
                 if (!empty($result['tag_ids'])) {
                     $existingByLink->tags()->sync($result['tag_ids']);
@@ -164,7 +163,7 @@ class ThuTinApiResource
 
             // 6. Tạo mới
             $result = FunctionHelp::chamDiemTuKhoa($data['contents_text']);
-            $data['level'] = $result['level'];
+            $data['diem'] = $result['diem'];
 
             $thuTin = ThuTin::create($data);
 
@@ -232,7 +231,7 @@ class ThuTinApiResource
                 'contents_text' => 'nullable|string',
                 'pic'           => 'nullable|string|max:150',
                 'phanloai'      => 'nullable|integer',
-                'level'         => 'integer|min:1|max:5',
+                'diem'          => 'integer|min:0',
                 'time'          => 'nullable|date',
             ], [
                 'link.required'     => 'Link bài viết là bắt buộc.',
@@ -245,9 +244,8 @@ class ThuTinApiResource
                 'pic.max'           => 'Tên file ảnh không được dài quá 150 ký tự.',
 
                 'phanloai.integer'  => 'Phân loại phải là số nguyên.',
-                'level.integer'     => 'Mức độ phải là số nguyên.',
-                'level.min'         => 'Mức độ tối thiểu là 1.',
-                'level.max'         => 'Mức độ tối đa là 5.',
+                'diem.integer'      => 'Điểm phải là số nguyên.',
+                'diem.min'          => 'Điểm tối thiểu là 0.',
 
                 'time.date'         => 'Trường time phải là ngày giờ hợp lệ (YYYY-MM-DD HH:MM:SS).',
 

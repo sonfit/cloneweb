@@ -10,7 +10,7 @@ class FunctionHelp
     public static function chamDiemTuKhoa(?string $contents_text): array
     {
         if (!$contents_text) {
-            return ['level' => 1, 'tag_ids' => []];
+            return ['diem' => 0, 'tag_ids' => []];
         }
 
         $noiDung = mb_strtolower(strip_tags($contents_text));
@@ -27,16 +27,8 @@ class FunctionHelp
             }
         }
 
-        // Map điểm -> level
-        $level = match (true) {
-            $tongDiem >= 100 => 5,
-            $tongDiem >= 70  => 4,
-            $tongDiem >= 40  => 3,
-            $tongDiem >= 20  => 2,
-            default          => 1,
-        };
         return [
-            'level'   => $level,
+            'diem'    => $tongDiem,
             'tag_ids' => $matchedIds,
         ];
     }
@@ -51,11 +43,46 @@ class FunctionHelp
         } elseif ($diffHours > 4) {
             return 'warning';
         } elseif ($diffHours > 3) {
-            return 'primary';
+            return 'gray';
         } elseif ($diffHours > 2) {
             return 'info';
         } else {
             return 'success';
         }
+    }
+
+    /**
+     * Quy đổi điểm sang level (1-5)
+     * 
+     * @param int $diem Điểm cần quy đổi
+     * @return int Level từ 1-5
+     */
+    public static function diemToLevel(int $diem): int
+    {
+        return match (true) {
+            $diem >= 100 => 5,
+            $diem >= 70  => 4,
+            $diem >= 40  => 3,
+            $diem >= 20  => 2,
+            default      => 1,
+        };
+    }
+
+    /**
+     * Trả về màu badge cho từng level
+     * 
+     * @param int $level Level từ 1-5
+     * @return string Màu badge (gray, info, success, warning, danger)
+     */
+    public static function levelBadgeColor(int $level): string
+    {
+        return match ($level) {
+            1 => 'gray',
+            2 => 'info',
+            3 => 'success',
+            4 => 'warning',
+            5 => 'danger',
+            default => 'gray',
+        };
     }
 }

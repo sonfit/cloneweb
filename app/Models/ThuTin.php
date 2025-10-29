@@ -12,7 +12,7 @@ class ThuTin extends Model
         'contents_text',
         'pic',
         'phanloai',
-        'level',
+        'diem',
         'id_bot',
         'id_user',
         'id_muctieu',
@@ -32,18 +32,6 @@ class ThuTin extends Model
             }
         });
 
-//        static::updating(function ($record) {
-//            if ($record->isDirty('pic')) {
-//                $oldPic = json_decode($record->getOriginal('pic'), true); // convert JSON -> array
-//                $newPic = $record->pic ?? [];
-//
-//                // Xóa những file cũ không còn trong danh sách mới
-//                $toDelete = array_diff($oldPic ?? [], $newPic);
-//                if (!empty($toDelete)) {
-//                    Storage::disk('public')->delete($toDelete);
-//                }
-//            }
-//        });
 
         static::updating(function ($record) {
             if ($record->isDirty('pic')) {

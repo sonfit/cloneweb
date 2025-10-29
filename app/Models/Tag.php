@@ -10,7 +10,8 @@ class Tag extends Model
     use HasRoles;
     protected $fillable = [
         'tag',
-        'diem'
+        'diem',
+        'parent'
     ];
 
     protected static function booted()

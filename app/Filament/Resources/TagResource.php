@@ -29,12 +29,52 @@ class TagResource extends Resource implements HasShieldPermissions
             ->schema([
                 Forms\Components\TextInput::make('tag')
                     ->required(),
+
+                Forms\Components\Select::make('parent')
+                    ->label('Nhóm phân loại')
+                    ->options(function () {
+                        return Tag::whereNotNull('parent')
+                            ->distinct()
+                            ->pluck('parent', 'parent')
+                            ->toArray();
+                    })
+                    ->searchable()
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('parent_name')
+                            ->label('Tên nhóm phân loại')
+                            ->required()
+                            ->helperText('Ví dụ: Các tỉnh miền Bắc, Các tỉnh miền Nam...'),
+                        Forms\Components\TextInput::make('default_diem')
+                            ->label('Điểm mặc định cho nhóm')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->default(0),
+                    ])
+                    ->createOptionUsing(function (array $data): string {
+                        // Tạo tag tạm để lưu parent name
+                        // Chúng ta chỉ cần trả về parent name vì đây chỉ là giá trị string
+                        $parentName = $data['parent_name'] ?? 'New Group';
+                        
+                        // Optional: Có thể tạo một tag placeholder với parent này
+                        // Tag::create([
+                        //     'tag' => 'placeholder_' . uniqid(),
+                        //     'parent' => $parentName,
+                        //     'diem' => $data['default_diem'] ?? 0,
+                        // ]);
+                        
+                        return $parentName;
+                    })
+                    ->placeholder('Chọn hoặc tạo nhóm phân loại')
+                    ->helperText('Nhóm phân loại dùng để xét điểm hàng loạt cho các tag thuộc nhóm này'),
+
                 Forms\Components\TextInput::make('diem')
                     ->label('Điểm')
                     ->numeric()
                     ->minValue(0)
-                    ->maxValue(10)
-                    ->default(0),
+                    ->maxValue(100)
+                    ->default(0)
+                    ->helperText('Điểm của tag này. Nếu có nhóm phân loại, điểm này có thể thay đổi so với điểm mặc định của nhóm.'),
             ]);
     }
 
@@ -43,6 +83,10 @@ class TagResource extends Resource implements HasShieldPermissions
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('tag')->label('Từ khoá')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('parent')
+                    ->label('Nhóm phân loại')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('diem')->label('Điểm')->sortable()->searchable(),
             ])
             ->filters([
@@ -77,6 +121,7 @@ class TagResource extends Resource implements HasShieldPermissions
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    
                 ]),
             ]);
     }

@@ -157,7 +157,7 @@ class BotResource extends Resource
                     })
 
                     ->color(function ($record, $state) {
-                        $colors = ['primary', 'success', 'danger', 'info'];
+                        $colors = ['primary', 'success', 'info', 'danger', 'gray'];
                         $index = $record->mucTieus->search(function ($item) use ($state) {
                                 return in_array($item->name, (array) $state);
                             }) % count($colors); // Lấy chỉ số dựa trên vị trí mục tiêu, lặp lại nếu vượt quá
