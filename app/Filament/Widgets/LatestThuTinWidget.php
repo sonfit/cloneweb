@@ -14,9 +14,39 @@ class LatestThuTinWidget extends BaseWidget
     protected static ?int $sort = 2;
     protected int | string | array $columnSpan = 'full';
 
+    public static function canView(): bool
+    {
+
+        $user = auth()->user();
+        // Cho phép xem nếu có quyền widget hoặc là admin/super_admin
+        return $user->can('widget_LatestThuTinWidget') || $user->hasAnyRole(['admin', 'super_admin']);
+    }
+
     public function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function ($query) {
+                $user = auth()->user();
+
+                // Nếu user có quyền admin hoặc super_admin thì xem tất cả
+                if ($user->hasAnyRole(['admin', 'super_admin'])) {
+                    return $query;
+                }
+
+                // Nếu user có quyền user thì chỉ xem tin thuộc mục tiêu mà user theo dõi
+                if ($user->hasRole('user')) {
+                    $mucTieuIds = $user->mucTieus()->pluck('muc_tieus.id')->toArray();
+
+                    // Nếu user chưa theo dõi mục tiêu nào thì không hiển thị gì
+                    if (empty($mucTieuIds)) {
+                        return $query->whereRaw('1 = 0'); // Always false condition
+                    }
+
+                    return $query->whereIn('id_muctieu', $mucTieuIds);
+                }
+
+                return $query;
+            })
             ->query(
                 ThuTin::query()
                     ->with(['mucTieu', 'bot'])

@@ -136,6 +136,39 @@ class MucTieuResource extends Resource
                     ->options(trans('options.type')),
             ])
             ->actions([
+                Tables\Actions\Action::make('toggleFollow')
+                    ->label(fn ($record) => auth()->user()->mucTieus()->where('muc_tieu_id', $record->id)->exists() 
+                        ? 'Bỏ theo dõi' 
+                        : 'Theo dõi')
+                    ->icon(fn ($record) => auth()->user()->mucTieus()->where('muc_tieu_id', $record->id)->exists()
+                        ? 'heroicon-o-x-circle'
+                        : 'heroicon-o-check-circle')
+                    ->color(fn ($record) => auth()->user()->mucTieus()->where('muc_tieu_id', $record->id)->exists()
+                        ? 'danger'
+                        : 'success')
+                    ->visible(fn () => auth()->user()->hasRole('user')) // Chỉ hiển thị cho user role
+                    ->action(function ($record) {
+                        $user = auth()->user();
+                        if ($user->mucTieus()->where('muc_tieu_id', $record->id)->exists()) {
+                            // Bỏ theo dõi
+                            $user->mucTieus()->detach($record->id);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Đã bỏ theo dõi')
+                                ->body('Đã bỏ theo dõi mục tiêu: ' . $record->name)
+                                ->success()
+                                ->send();
+                        } else {
+                            // Theo dõi
+                            $user->mucTieus()->attach($record->id);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Đã theo dõi')
+                                ->body('Bạn đang theo dõi mục tiêu: ' . $record->name)
+                                ->success()
+                                ->send();
+                        }
+                    })
+                    ->requiresConfirmation(),
+                    
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])

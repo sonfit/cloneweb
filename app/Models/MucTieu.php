@@ -27,4 +27,10 @@ class MucTieu extends Model
     {
         return $this->belongsToMany(Bot::class, 'bot_muc_tieu');
     }
+
+    // Các user đang theo dõi mục tiêu này
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_muc_tieu');
+    }
 }

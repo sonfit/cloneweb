@@ -14,46 +14,76 @@ use Illuminate\Support\Number;
 class StatsOverviewWidget extends BaseWidget
 {
     protected static ?int $sort = 1;
+    public static function canView(): bool
+    {
+        $user = auth()->user();
+        // Cho phép xem nếu có quyền widget hoặc là admin/super_admin
+        return $user->can('widget_StatsOverviewWidget') || $user->hasAnyRole(['admin', 'super_admin']);
+    }
 
     protected function getStats(): array
     {
-        $totalTongHopTinhhinh = TongHopTinhHinh::count();
-        $totalThueTin = ThuTin::count();
-        $totalUsers = User::count();
-        $pendingJobs = TraceJob::where('status', 'pending')->count();
+        $user = auth()->user();
+        $isAdmin = $user->hasAnyRole(['admin', 'super_admin']);
 
-        $todayTongHopTinhhinh = TongHopTinhHinh::whereDate('created_at', today())->count();
-        $todayThueTin = ThuTin::whereDate('created_at', today())->count();
+        $stats = [];
 
-        $yesterdayTongHopTinhhinh = TongHopTinhhinh::whereDate('created_at', today()->subDay())->count();
-        $yesterdayThueTin = ThuTin::whereDate('created_at', today()->subDay())->count();
+        // Chỉ admin mới hiển thị tổng hợp tình hình
+        if ($isAdmin) {
+            $totalTongHopTinhhinh = TongHopTinhHinh::count();
+            $todayTongHopTinhhinh = TongHopTinhhinh::whereDate('created_at', today())->count();
+            $yesterdayTongHopTinhhinh = TongHopTinhhinh::whereDate('created_at', today()->subDay())->count();
 
-        return [
-            Stat::make('Tổng số tổng hợp', Number::format($totalTongHopTinhhinh))
+            $stats[] = Stat::make('Tổng số tổng hợp', Number::format($totalTongHopTinhhinh))
                 ->description($totalTongHopTinhhinh . ' tổng hợp hôm nay')
                 ->descriptionIcon('heroicon-o-arrow-trending-up')
                 ->descriptionColor($todayTongHopTinhhinh > $yesterdayTongHopTinhhinh ? 'success' : 'warning')
                 ->color('info')
-                ->chart($this->getDangKyChartData()),
+                ->chart($this->getDangKyChartData());
+        }
 
-            Stat::make('Tổng số thu thập tin', Number::format($totalThueTin))
-                ->description($todayThueTin . ' tin hôm nay')
-                ->descriptionIcon('heroicon-o-arrow-trending-up')
-                ->descriptionColor($todayThueTin > $yesterdayThueTin ? 'success' : 'warning')
-                ->color('success')
-                ->chart($this->getThueTinChartData()),
+        // Thu thập tin - filter theo role
+        $thuTinQuery = ThuTin::query();
+        if (!$isAdmin && $user->hasRole('user')) {
+            $mucTieuIds = $user->mucTieus()->pluck('muc_tieus.id')->toArray();
+            if (!empty($mucTieuIds)) {
+                $thuTinQuery->whereIn('id_muctieu', $mucTieuIds);
+            } else {
+                $thuTinQuery->whereRaw('1 = 0');
+            }
+        }
 
-            Stat::make('Tổng số người dùng', Number::format($totalUsers))
+        $totalThueTin = $thuTinQuery->count();
+        $todayThueTin = (clone $thuTinQuery)->whereDate('created_at', today())->count();
+        $yesterdayThueTin = (clone $thuTinQuery)->whereDate('created_at', today()->subDay())->count();
+
+        $stats[] = Stat::make('Tổng số thu thập tin', Number::format($totalThueTin))
+            ->description($todayThueTin . ' tin hôm nay')
+            ->descriptionIcon('heroicon-o-arrow-trending-up')
+            ->descriptionColor($todayThueTin > $yesterdayThueTin ? 'success' : 'warning')
+            ->color('success')
+            ->chart($this->getThueTinChartData());
+
+        // Chỉ admin mới hiển thị số người dùng
+        if ($isAdmin) {
+            $totalUsers = User::count();
+            $stats[] = Stat::make('Tổng số người dùng', Number::format($totalUsers))
                 ->description('Người dùng hệ thống')
                 ->descriptionIcon('heroicon-o-users')
-                ->color('warning'),
+                ->color('warning');
+        }
 
-            Stat::make('Job đang chờ', Number::format($pendingJobs))
+        // Chỉ admin mới hiển thị包扎 job chờ
+        if ($isAdmin) {
+            $pendingJobs = TraceJob::where('status', 'pending')->count();
+            $stats[] = Stat::make('Job đang chờ', Number::format($pendingJobs))
                 ->description('Chưa được xử lý')
                 ->descriptionIcon('heroicon-o-clock')
                 ->descriptionColor($pendingJobs > 0 ? 'warning' : 'success')
-                ->color($pendingJobs > 0 ? 'danger' : 'success'),
-        ];
+                ->color($pendingJobs > 0 ? 'danger' : 'success');
+        }
+
+        return $stats;
     }
 
     protected function getDangKyChartData(): array
@@ -68,10 +98,23 @@ class StatsOverviewWidget extends BaseWidget
     protected function getThueTinChartData(): array
     {
         $data = [];
+        $user = auth()->user();
+        $isAdmin = $user->hasAnyRole(['admin', 'super_admin']);
+
         for ($i = 6; $i >= 0; $i--) {
-            $data[] = ThuTin::whereDate('created_at', today()->subDays($i))->count();
+            $thuTinQuery = ThuTin::whereDate('created_at', today()->subDays($i));
+
+            if (!$isAdmin && $user->hasRole('user')) {
+                $mucTieuIds = $user->mucTieus()->pluck('muc_tieus.id')->toArray();
+                if (!empty($mucTieuIds)) {
+                    $thuTinQuery->whereIn('id_muctieu', $mucTieuIds);
+                } else {
+                    $thuTinQuery->whereRaw('1 = 0');
+                }
+            }
+
+            $data[] = $thuTinQuery->count();
         }
         return $data;
     }
 }
-

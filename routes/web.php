@@ -10,6 +10,12 @@ use Illuminate\Http\Request;
 use App\Models\TraceJob;
 use App\Services\TraceJobService;
 
+
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
+use App\Filament\Widgets;
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -25,6 +31,36 @@ Route::get('/post', PublicCreateTongHop::class)
 Route::get('/dk', PublicCreateDangKy::class)
     ->name('dang_ky')
     ->middleware('web');
+
+Route::get('/widgets', function () {
+    $widgets = collect(File::allFiles(app_path('Filament/Widgets')))
+        ->map(function ($file) {
+            $class = 'App\\Filament\\Widgets\\' . $file->getFilenameWithoutExtension();
+
+            if (! class_exists($class)) {
+                return null;
+            }
+
+            $instance = app($class); // 👈 tạo instance đúng cách
+
+            $slug = method_exists($instance, 'getId')
+                ? $instance->getId()
+                : Str::slug(class_basename($class));
+
+//            $title = method_exists($instance, 'getHeading')
+//                ? $instance->getHeading()
+//                : (property_exists($class, 'heading') ? $class::$heading ?? null : null);
+
+            return [
+                'class' => $class,
+                'slug' => $slug,
+//                'title' => $title,
+            ];
+        })
+        ->filter(); // bỏ null
+
+    return new HtmlString('<pre>' . json_encode($widgets, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . '</pre>');
+});
 
 
 

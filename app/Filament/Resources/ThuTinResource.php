@@ -16,7 +16,9 @@ use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+
 class ThuTinResource extends Resource
 {
     protected static ?string $model = ThuTin::class;
@@ -71,6 +73,14 @@ class ThuTinResource extends Resource
 
                 Forms\Components\TextInput::make('diem')
                     ->label('Điểm')
+                    ->helperText(new HtmlString('
+                        <strong>Điểm từ 0–100:</strong><br>
+                        - điểm ≥ 100 → level 5<br>
+                        - điểm ≥ 70 → level 4<br>
+                        - điểm ≥ 40 → level 3<br>
+                        - điểm ≥ 20 → level 2<br>
+                        - điểm < 20 → level 1
+                    '))
                     ->numeric()
                     ->default(0)
                     ->minValue(0)
@@ -102,17 +112,34 @@ class ThuTinResource extends Resource
                     ]),
 
 
-
-
-
-
-
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function ($query) {
+                $user = auth()->user();
+                
+                // Nếu user có quyền admin hoặc super_admin thì xem tất cả
+                if ($user->hasAnyRole(['admin', 'super_admin'])) {
+                    return $query;
+                }
+                
+                // Nếu user có quyền user thì chỉ xem tin thuộc mục tiêu mà user theo dõi
+                if ($user->hasRole('user')) {
+                    $mucTieuIds = $user->mucTieus()->pluck('muc_tieus.id')->toArray();
+                    
+                    // Nếu user chưa theo dõi mục tiêu nào thì không hiển thị gì
+                    if (empty($mucTieuIds)) {
+                        return $query->whereRaw('1 = 0'); // Always false condition
+                    }
+                    
+                    return $query->whereIn('id_muctieu', $mucTieuIds);
+                }
+                
+                return $query;
+            })
             ->defaultSort('time', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('stt')
@@ -147,7 +174,7 @@ class ThuTinResource extends Resource
                             $url = Storage::disk('public')->url($p);
                             $ext = strtolower(pathinfo($url, PATHINFO_EXTENSION));
 
-                            if (in_array($ext, ['mp4','webm','ogg','mov','avi'])) {
+                            if (in_array($ext, ['mp4', 'webm', 'ogg', 'mov', 'avi'])) {
                                 // Nếu là video -> dùng ảnh placeholder
                                 return asset('video-placeholder.jpg');
                             }
@@ -167,7 +194,7 @@ class ThuTinResource extends Resource
                 Tables\Columns\TextColumn::make('phanloai')
                     ->label('Phân loại')
                     ->formatStateUsing(
-                        fn ($state) => trans("options.phanloai.$state") !== "options.phanloai.$state"
+                        fn($state) => trans("options.phanloai.$state") !== "options.phanloai.$state"
                             ? trans("options.phanloai.$state")
                             : 'Chưa xác định'
                     )
@@ -215,7 +242,7 @@ class ThuTinResource extends Resource
                         $index = $record->tags->search(function ($item) use ($state) {
 //                            dd($state, $item);
 
-                                return in_array($item->tag, (array) $state);
+                                return in_array($item->tag, (array)$state);
                             }) % count($colors); // Lấy chỉ số dựa trên vị trí mục tiêu, lặp lại nếu vượt quá
                         return $colors[$index];
                     }),
@@ -231,8 +258,8 @@ class ThuTinResource extends Resource
                     ->label('Thời gian')
                     ->dateTime('H:i:s d/m/Y')
                     ->sortable()
-                    ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('H:i:s d/m/Y'))
-                    ->color(fn ($state) => FunctionHelp::timeBadgeColor($state)) // Đảm bảo $state là giá trị gốc
+                    ->formatStateUsing(fn($state) => \Carbon\Carbon::parse($state)->format('H:i:s d/m/Y'))
+                    ->color(fn($state) => FunctionHelp::timeBadgeColor($state)) // Đảm bảo $state là giá trị gốc
                     ->badge()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -262,8 +289,8 @@ class ThuTinResource extends Resource
                     ])
                     ->query(function ($query, array $data) {
                         return $query
-                            ->when($data['diem_from'], fn ($query, $from) => $query->where('diem', '>=', $from))
-                            ->when($data['diem_to'], fn ($query, $to) => $query->where('diem', '<=', $to));
+                            ->when($data['diem_from'], fn($query, $from) => $query->where('diem', '>=', $from))
+                            ->when($data['diem_to'], fn($query, $to) => $query->where('diem', '<=', $to));
                     }),
             ])
             ->actions([

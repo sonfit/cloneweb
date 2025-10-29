@@ -76,5 +76,9 @@ class User extends Authenticatable
         return $this->hasMany(DangKy::class, 'user_id');
     }
 
-
+    // Mục tiêu mà user đang theo dõi
+    public function mucTieus()
+    {
+        return $this->belongsToMany(MucTieu::class, 'user_muc_tieu');
+    }
 }

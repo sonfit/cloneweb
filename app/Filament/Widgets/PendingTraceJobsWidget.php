@@ -10,6 +10,13 @@ class PendingTraceJobsWidget extends BaseWidget
 {
     protected static ?int $sort = 5;
 
+    public static function canView(): bool
+    {
+        $user = auth()->user();
+        // Cho phép xem nếu có quyền widget hoặc là admin/super_admin
+        return $user->can('widget_PendingTraceJobsWidget') || $user->hasAnyRole(['admin', 'super_admin']);
+    }
+
     protected function getStats(): array
     {
         $pendingJobs = TraceJob::where('status', 'pending')->count();

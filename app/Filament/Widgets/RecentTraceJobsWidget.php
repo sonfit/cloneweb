@@ -12,6 +12,13 @@ class RecentTraceJobsWidget extends BaseWidget
     protected static ?int $sort = 4;
     protected int | string | array $columnSpan = 'full';
 
+    public static function canView(): bool
+    {
+        $user = auth()->user();
+        // Cho phép xem nếu có quyền widget hoặc là admin/super_admin
+        return $user->can('widget_RecentTraceJobsWidget') || $user->hasAnyRole(['admin', 'super_admin']);
+    }
+
     public function table(Table $table): Table
     {
         return $table
