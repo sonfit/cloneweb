@@ -18,7 +18,6 @@ class LatestThuTinWidget extends BaseWidget
     {
 
         $user = auth()->user();
-        // Cho phép xem nếu có quyền widget hoặc là admin/super_admin
         return $user->can('widget_LatestThuTinWidget') || $user->hasAnyRole(['admin', 'super_admin']);
     }
 
