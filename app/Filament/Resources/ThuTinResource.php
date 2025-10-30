@@ -294,7 +294,7 @@ class ThuTinResource extends Resource implements HasShieldPermissions
             ])
             ->actions([
                 Tables\Actions\Action::make('tasklist')
-                    ->label('TaskList')
+                    ->label('Công việc')
                     ->icon('heroicon-o-clipboard-document-list')
                     ->color(fn(ThuTin $record) => ($record->tasklist_count ?? $record->tasklists()->count()) > 0 ? 'success' : 'gray')
                     ->tooltip(function (ThuTin $record) {
