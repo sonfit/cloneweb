@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use App\Models\TraceJob;
 use App\Services\TraceJobService;
 
-
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
