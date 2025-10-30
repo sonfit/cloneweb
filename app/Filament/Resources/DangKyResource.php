@@ -315,6 +315,32 @@ class DangKyResource extends Resource implements HasShieldPermissions
         ];
     }
 
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false; // Không hiển thị trong menu/sidebar
+    }
+
+    public static function canViewAny(): bool
+    {
+        return false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
+    }
+
 //    public static function canCreate(): bool
 //    {
 //        return true;

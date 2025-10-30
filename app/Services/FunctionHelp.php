@@ -7,6 +7,18 @@ use Carbon\Carbon;
 
 class FunctionHelp
 {
+
+    public static function isAdminUser($user = null): bool
+    {
+        $user = $user ?? auth()->user();
+        return $user?->hasAnyRole(['admin', 'super_admin']) ?? false;
+    }
+
+    public static function isUser($user = null): bool
+    {
+        $user = $user ?? auth()->user();
+        return $user?->hasAnyRole(['user']) ?? false;
+    }
     public static function chamDiemTuKhoa(?string $contents_text): array
     {
         if (!$contents_text) {
@@ -53,7 +65,7 @@ class FunctionHelp
 
     /**
      * Quy đổi điểm sang level (1-5)
-     * 
+     *
      * @param int $diem Điểm cần quy đổi
      * @return int Level từ 1-5
      */
@@ -70,7 +82,7 @@ class FunctionHelp
 
     /**
      * Trả về màu badge cho từng level
-     * 
+     *
      * @param int $level Level từ 1-5
      * @return string Màu badge (gray, info, success, warning, danger)
      */

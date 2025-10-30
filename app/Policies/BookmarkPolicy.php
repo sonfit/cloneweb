@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\ThuTin;
+use App\Models\Bookmark;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class ThuTinPolicy
+class BookmarkPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class ThuTinPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_thu::tin');
+        return $user->can('view_any_bookmark');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, ThuTin $thuTin): bool
+    public function view(User $user, Bookmark $bookmark): bool
     {
-        return $user->can('view_thu::tin');
+        return $user->can('view_bookmark');
     }
 
     /**
@@ -31,23 +31,23 @@ class ThuTinPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_thu::tin');
+        return $user->can('create_bookmark');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, ThuTin $thuTin): bool
+    public function update(User $user, Bookmark $bookmark): bool
     {
-        return $user->can('update_thu::tin');
+        return $user->can('update_bookmark');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, ThuTin $thuTin): bool
+    public function delete(User $user, Bookmark $bookmark): bool
     {
-        return $user->can('delete_thu::tin');
+        return $user->can('delete_bookmark');
     }
 
     /**
@@ -55,15 +55,15 @@ class ThuTinPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_thu::tin');
+        return $user->can('delete_any_bookmark');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, ThuTin $thuTin): bool
+    public function forceDelete(User $user, Bookmark $bookmark): bool
     {
-        return $user->can('{{ ForceDelete }}');
+        return $user->can('force_delete_bookmark');
     }
 
     /**
@@ -71,15 +71,15 @@ class ThuTinPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('{{ ForceDeleteAny }}');
+        return $user->can('force_delete_any_bookmark');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, ThuTin $thuTin): bool
+    public function restore(User $user, Bookmark $bookmark): bool
     {
-        return $user->can('{{ Restore }}');
+        return $user->can('restore_bookmark');
     }
 
     /**
@@ -87,15 +87,15 @@ class ThuTinPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('{{ RestoreAny }}');
+        return $user->can('restore_any_bookmark');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, ThuTin $thuTin): bool
+    public function replicate(User $user, Bookmark $bookmark): bool
     {
-        return $user->can('{{ Replicate }}');
+        return $user->can('replicate_bookmark');
     }
 
     /**
@@ -103,6 +103,6 @@ class ThuTinPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('{{ Reorder }}');
+        return $user->can('reorder_bookmark');
     }
 }

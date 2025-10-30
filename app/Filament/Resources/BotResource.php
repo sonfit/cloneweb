@@ -7,6 +7,7 @@ use App\Filament\Resources\BotResource\RelationManagers;
 use App\Models\Bot;
 use App\Models\MucTieu;
 use App\Services\FunctionHelp;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
 
-class BotResource extends Resource
+class BotResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Bot::class;
 
@@ -200,6 +201,17 @@ class BotResource extends Resource
             'create' => Pages\CreateBot::route('/create'),
             'view' => Pages\ViewBot::route('/{record}'),
             'edit' => Pages\EditBot::route('/{record}/edit'),
+        ];
+    }
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
         ];
     }
 }

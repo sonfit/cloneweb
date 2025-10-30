@@ -21,6 +21,8 @@ class TongHopResource extends Resource implements HasShieldPermissions
     protected static ?string $navigationGroup = 'Tổng Hợp';
     protected static ?string $navigationLabel = 'Tổng Hợp';
     protected static ?string $modelLabel = 'Tổng Hợp';
+    protected static ?string $slug = 'tong-hop';
+
 
     public static function form(Form $form): Form
     {
@@ -132,19 +134,29 @@ class TongHopResource extends Resource implements HasShieldPermissions
         ];
     }
 
-    public static function canCreate(): bool
+    public static function shouldRegisterNavigation(): bool
     {
-        return true;
+        return false; // Không hiển thị trong menu/sidebar
     }
 
     public static function canViewAny(): bool
     {
-        return true;
+        return false;
     }
 
-    public static function shouldRegisterNavigation(): bool
+    public static function canCreate(): bool
     {
-        return false; // Không hiển thị trong menu/sidebar
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
     }
 
 }

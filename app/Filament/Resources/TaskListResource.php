@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\BookmarkResource\Pages;
-use App\Models\Bookmark;
+use App\Filament\Resources\TaskListResource\Pages;
+use App\Models\TaskList;
 use App\Services\FunctionHelp;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
@@ -11,17 +11,18 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class BookmarkResource extends Resource implements HasShieldPermissions
+class TaskListResource extends Resource implements HasShieldPermissions
 {
-    protected static ?string $model = Bookmark::class;
+    protected static ?string $model = TaskList::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-bookmark';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static ?string $navigationGroup = 'Tổng Hợp';
-    protected static ?string $navigationLabel = 'Bookmarks';
-    protected static ?string $modelLabel = 'Bookmark';
-    protected static ?string $slug = 'bookmarks';
-    protected static bool $shouldRegisterNavigation = false;
+    protected static ?string $navigationLabel = 'Công việc';
+    protected static ?string $modelLabel = 'Danh sách công việc';
+    protected static ?string $slug = 'danh-sach-cong-viec';
 
     public static function form(Form $form): Form
     {
@@ -90,37 +91,17 @@ class BookmarkResource extends Resource implements HasShieldPermissions
     public static function getRelations(): array
     {
         return [
-            BookmarkResource\RelationManagers\ThuTinsRelationManager::class,
+            TaskListResource\RelationManagers\ThuTinsRelationManager::class
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListBookmarks::route('/'),
-            'create' => Pages\CreateBookmark::route('/create'),
-            'edit' => Pages\EditBookmark::route('/{record}/edit'),
+            'index' => Pages\ListTaskLists::route('/'),
+            'create' => Pages\CreateTaskList::route('/create'),
+            'edit' => Pages\EditTaskList::route('/{record}/edit'),
         ];
-    }
-
-    public static function canViewAny(): bool
-    {
-        return false;
-    }
-
-    public static function canCreate(): bool
-    {
-        return false;
-    }
-
-    public static function canEdit($record): bool
-    {
-        return false;
-    }
-
-    public static function canDelete($record): bool
-    {
-        return false;
     }
 
     public static function getPermissionPrefixes(): array
@@ -135,5 +116,3 @@ class BookmarkResource extends Resource implements HasShieldPermissions
         ];
     }
 }
-
-

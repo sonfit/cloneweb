@@ -23,6 +23,7 @@ class LinkResource extends Resource implements HasShieldPermissions
     protected static ?string $navigationGroup = 'Tổng Hợp';
     protected static ?string $navigationLabel = 'Liên kết';
     protected static ?string $modelLabel = 'Liên kết';
+    protected static ?string $slug = 'lien-ket';
 
 
     public static function form(Form $form): Form
@@ -106,5 +107,26 @@ class LinkResource extends Resource implements HasShieldPermissions
     public static function shouldRegisterNavigation(): bool
     {
         return false; // Không hiển thị trong menu/sidebar
+    }
+
+
+    public static function canViewAny(): bool
+    {
+        return false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
     }
 }

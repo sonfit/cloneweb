@@ -75,4 +75,9 @@ class ThuTin extends Model
     {
         return $this->belongsToMany(Bookmark::class, 'bookmark_thu_tin')->withTimestamps();
     }
+
+    public function tasklists()
+    {
+        return $this->belongsToMany(TaskList::class, 'task_list_thu_tin')->withTimestamps();
+    }
 }

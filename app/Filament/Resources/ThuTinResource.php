@@ -3,8 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ThuTinResource\Pages;
+use App\Models\TaskList;
 use App\Models\ThuTin;
-use App\Models\Bookmark;
 use App\Services\FunctionHelp;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Facades\Filament;
@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
-class ThuTinResource extends Resource
+class ThuTinResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = ThuTin::class;
 
@@ -121,25 +121,25 @@ class ThuTinResource extends Resource
         return $table
             ->modifyQueryUsing(function ($query) {
                 $user = auth()->user();
-                $query->with(['bookmarks.user'])->withCount('bookmarks');
-                
+                $query->with(['tasklists.user'])->withCount('tasklists');
+
                 // Nếu user có quyền admin hoặc super_admin thì xem tất cả
-                if ($user->hasAnyRole(['admin', 'super_admin'])) {
+                if (FunctionHelp::isAdminUser()) {
                     return $query;
                 }
-                
+
                 // Nếu user có quyền user thì chỉ xem tin thuộc mục tiêu mà user theo dõi
-                if ($user->hasRole('user')) {
+                if (FunctionHelp::isUser()) {
                     $mucTieuIds = $user->mucTieus()->pluck('muc_tieus.id')->toArray();
-                    
+
                     // Nếu user chưa theo dõi mục tiêu nào thì không hiển thị gì
                     if (empty($mucTieuIds)) {
                         return $query->whereRaw('1 = 0'); // Always false condition
                     }
-                    
+
                     return $query->whereIn('id_muctieu', $mucTieuIds);
                 }
-                
+
                 return $query;
             })
             ->defaultSort('time', 'desc')
@@ -200,7 +200,6 @@ class ThuTinResource extends Resource
                             ? trans("options.phanloai.$state")
                             : 'Chưa xác định'
                     )
-//                    ->formatStateUsing(fn($state) => trans('options.phanloai.' . $state, [], 'Chưa phân loại'))
                     ->badge()
                     ->color(fn($state) => match ($state) {
                         1, 2 => 'danger',
@@ -242,10 +241,8 @@ class ThuTinResource extends Resource
                     ->color(function ($record, $state) {
                         $colors = ['primary', 'success', 'danger', 'info'];
                         $index = $record->tags->search(function ($item) use ($state) {
-//                            dd($state, $item);
-
                                 return in_array($item->tag, (array)$state);
-                            }) % count($colors); // Lấy chỉ số dựa trên vị trí mục tiêu, lặp lại nếu vượt quá
+                            }) % count($colors);
                         return $colors[$index];
                     }),
 
@@ -296,35 +293,36 @@ class ThuTinResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\Action::make('bookmark')
-                    ->label('Bookmark')
-                    ->icon('heroicon-o-bookmark')
-                    ->color(fn(\App\Models\ThuTin $record) => ($record->bookmarks_count ?? $record->bookmarks()->count()) > 0 ? 'success' : 'gray')
-                    ->tooltip(function (\App\Models\ThuTin $record) {
-                        $names = $record->bookmarks?->pluck('name') ?? collect();
-                        return $names->isNotEmpty() ? $names->join(', ') : 'Chưa có bookmark';
+                Tables\Actions\Action::make('tasklist')
+                    ->label('TaskList')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->color(fn(ThuTin $record) => ($record->tasklist_count ?? $record->tasklists()->count()) > 0 ? 'success' : 'gray')
+                    ->tooltip(function (ThuTin $record) {
+                        $names = $record->tasklists?->pluck('name') ?? collect();
+                        return $names->isNotEmpty() ? $names->join(', ') : 'Chưa có';
                     })
                     ->form(function () {
                         return [
                             Forms\Components\TagsInput::make('foreign_names')
-                                ->label('Bookmark của người khác')
+                                ->label('Danh khác công việc của người dùng khác')
                                 ->disabled()
                                 ->dehydrated(false)
                                 ->visible(function (\Filament\Forms\Get $get) {
                                     $user = auth()->user();
-                                    $isAdmin = $user && $user->hasAnyRole(['admin', 'super_admin']);
+                                    $isAdmin = $user && FunctionHelp::isAdminUser();
                                     return !$isAdmin && filled($get('foreign_names'));
                                 }),
-                            Forms\Components\Select::make('bookmark_ids')
-                                ->label('Chọn bookmark')
+                            Forms\Components\Select::make('tasklist_ids')
+                                ->label('Chọn công việc')
                                 ->multiple()
                                 ->searchable()
                                 ->preload()
+                                ->autofocus(false)
                                 ->options(function () {
                                     $user = auth()->user();
-                                    $isAdmin = $user->hasAnyRole(['admin', 'super_admin']);
+                                    $isAdmin = FunctionHelp::isAdminUser();
 
-                                    return Bookmark::query()
+                                    return TaskList::query()
                                         ->when(!$isAdmin, fn($q) => $q->where('user_id', $user->id))
                                         ->with('user')
                                         ->latest()
@@ -340,9 +338,8 @@ class ThuTinResource extends Resource
                                 })
                                 ->getSearchResultsUsing(function (string $search) {
                                     $user = auth()->user();
-                                    $isAdmin = $user->hasAnyRole(['admin', 'super_admin']);
-
-                                    return Bookmark::query()
+                                    $isAdmin = FunctionHelp::isAdminUser();
+                                    return TaskList::query()
                                         ->when(!$isAdmin, fn($q) => $q->where('user_id', $user->id))
                                         ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
                                         ->with('user')
@@ -358,11 +355,10 @@ class ThuTinResource extends Resource
                                         ->toArray();
                                 })
                                 ->getOptionLabelsUsing(function (array $values) {
-                                    $user = auth()->user();
-                                    $isAdmin = $user->hasAnyRole(['admin', 'super_admin']);
-                                    $bookmarks = Bookmark::with('user')->whereIn('id', $values)->get();
+                                    $isAdmin = FunctionHelp::isAdminUser();
+                                    $tasklists = TaskList::with('user')->whereIn('id', $values)->get();
                                     $labels = [];
-                                    foreach ($bookmarks as $b) {
+                                    foreach ($tasklists as $b) {
                                         $date = $b->created_at?->format('d/m/Y H:i');
                                         $labels[$b->id] = $isAdmin
                                             ? ($b->name . ' - (' . ($b->user?->name ?? 'user') . ') - ' . $date)
@@ -372,34 +368,34 @@ class ThuTinResource extends Resource
                                 })
                                 ->createOptionForm([
                                     Forms\Components\TextInput::make('name')
-                                        ->label('Tên bookmark')
+                                        ->label('Tên công việc')
                                         ->required()
                                         ->maxLength(255),
                                 ])
                                 ->createOptionUsing(function (array $data) {
                                     $user = auth()->user();
-                                    $bookmark = Bookmark::create([
+                                    $tasklist = TaskList::create([
                                         'user_id' => $user->id,
                                         'name' => $data['name'] ?? '',
                                     ]);
-                                    return $bookmark->id;
+                                    return $tasklist->id;
                                 })
                                 ->nullable(),
                         ];
                     })
                     ->mountUsing(function (\Filament\Forms\ComponentContainer $form, ThuTin $record) {
-                        $bookmarks = $record->bookmarks()->with('user')->get();
+                        $tasklists = $record->tasklists()->with('user')->get();
                         $user = auth()->user();
-                        $isAdmin = $user && $user->hasAnyRole(['admin', 'super_admin']);
+                        $isAdmin = $user && FunctionHelp::isAdminUser();
                         if ($isAdmin) {
                             $form->fill([
-                                'bookmark_ids' => $bookmarks->pluck('id')->toArray(),
+                                'tasklist_ids' => $tasklists->pluck('id')->toArray(),
                                 'foreign_names' => null,
                             ]);
                             return;
                         }
-                        $own = $bookmarks->where('user_id', $user->id);
-                        $foreign = $bookmarks->where('user_id', '!=', $user->id);
+                        $own = $tasklists->where('user_id', $user->id);
+                        $foreign = $tasklists->where('user_id', '!=', $user->id);
                         $ownIds = $own->pluck('id')->toArray();
                         $foreignNames = $foreign->map(function ($b) {
                             $date = $b->created_at?->format('d/m/Y H:i');
@@ -407,25 +403,27 @@ class ThuTinResource extends Resource
                         })->values()->toArray();
 
                         $form->fill([
-                            'bookmark_ids' => $ownIds,
+                            'tasklist_ids' => $ownIds,
                             'foreign_names' => $foreignNames,
                         ]);
                     })
                     ->action(function (ThuTin $record, array $data) {
                         $user = auth()->user();
-                        $selectedIds = collect($data['bookmark_ids'] ?? [])->map(fn($v) => (int)$v)->unique()->values();
-                        $isAdmin = $user->hasAnyRole(['admin', 'super_admin']);
+                        $selectedIds = collect($data['tasklist_ids'] ?? [])->map(fn($v) => (int)$v)->unique()->values();
+                        $isAdmin = FunctionHelp::isAdminUser();
 
                         if ($isAdmin) {
-                            $record->bookmarks()->sync($selectedIds);
+                            $record->tasklists()->sync($selectedIds);
                             return;
                         }
 
                         $currentUserId = $user->id;
-                        $existingOwn = $record->bookmarks()
-                            ->where('bookmarks.user_id', $currentUserId)
-                            ->pluck('bookmarks.id');
-                        $selectedOwn = Bookmark::query()
+                        $existingOwn = $record->tasklists()
+                            ->where('task_lists.user_id', $currentUserId)
+                            ->pluck('task_lists.id');
+
+
+                        $selectedOwn = TaskList::query()
                             ->where('user_id', $currentUserId)
                             ->whereIn('id', $selectedIds)
                             ->pluck('id');
@@ -434,15 +432,15 @@ class ThuTinResource extends Resource
                         $toDetach = $existingOwn->diff($selectedOwn);
 
                         if ($toAttach->isNotEmpty()) {
-                            $record->bookmarks()->syncWithoutDetaching($toAttach->all());
+                            $record->tasklists()->syncWithoutDetaching($toAttach->all());
                         }
                         if ($toDetach->isNotEmpty()) {
-                            $record->bookmarks()->detach($toDetach->all());
+                            $record->tasklists()->detach($toDetach->all());
                         }
                     })
-                    ->successNotificationTitle('Đã cập nhật bookmark')
+                    ->successNotificationTitle('Đã cập nhật công việc')
                     ->visible(fn() => auth()->check())
-                    ->modalHeading('Thêm vào bookmark')
+                    ->modalHeading('Thêm vào công việc')
                     ->modalSubmitActionLabel('Lưu'),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -468,6 +466,18 @@ class ThuTinResource extends Resource
             'create' => Pages\CreateThuTin::route('/create'),
             'view' => Pages\ViewThuTin::route('/{record}'),
             'edit' => Pages\EditThuTin::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
         ];
     }
 }

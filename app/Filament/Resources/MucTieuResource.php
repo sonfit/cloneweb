@@ -6,6 +6,7 @@ use App\Filament\Resources\MucTieuResource\Pages;
 use App\Filament\Resources\MucTieuResource\RelationManagers;
 use App\Models\MucTieu;
 use App\Services\FunctionHelp;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,7 +16,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class MucTieuResource extends Resource
+class MucTieuResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = MucTieu::class;
 
@@ -137,8 +138,8 @@ class MucTieuResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('toggleFollow')
-                    ->label(fn ($record) => auth()->user()->mucTieus()->where('muc_tieu_id', $record->id)->exists() 
-                        ? 'Bỏ theo dõi' 
+                    ->label(fn ($record) => auth()->user()->mucTieus()->where('muc_tieu_id', $record->id)->exists()
+                        ? 'Bỏ theo dõi'
                         : 'Theo dõi')
                     ->icon(fn ($record) => auth()->user()->mucTieus()->where('muc_tieu_id', $record->id)->exists()
                         ? 'heroicon-o-x-circle'
@@ -168,7 +169,7 @@ class MucTieuResource extends Resource
                         }
                     })
                     ->requiresConfirmation(),
-                    
+
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
@@ -191,6 +192,18 @@ class MucTieuResource extends Resource
             'create' => Pages\CreateMucTieu::route('/create'),
             'view' => Pages\ViewMucTieu::route('/{record}'),
             'edit' => Pages\EditMucTieu::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
         ];
     }
 }

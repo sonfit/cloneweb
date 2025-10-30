@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TongHopTinhHinhResource\Pages;
 use App\Models\TongHopTinhHinh;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use Joaopaulolndev\FilamentGeneralSettings\Models\GeneralSetting;
 use OpenAI;
 
-class TongHopTinhHinhResource extends Resource
+class TongHopTinhHinhResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = TongHopTinhHinh::class;
 
@@ -305,6 +306,18 @@ class TongHopTinhHinhResource extends Resource
         ];
 
         return $messages;
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+        ];
     }
 
 
