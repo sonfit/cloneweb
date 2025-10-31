@@ -67,12 +67,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                StatsOverviewWidget::class,
-                LatestThuTinWidget::class,
-                ChartStatsWidget::class,
-                RecentTraceJobsWidget::class,
-                PendingTraceJobsWidget::class,
-                Widgets\AccountWidget::class,
+
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -113,12 +108,6 @@ class AdminPanelProvider extends PanelProvider
                     ->setNavigationGroup('Settings')
                     ->setTitle('General Settings')
                     ->setNavigationLabel('General Settings'),
-
-//                BannerPlugin::make()
-//                    ->navigationIcon('heroicon-o-megaphone')
-//                    ->navigationLabel('Banners')
-//                    ->navigationGroup('Marketing')
-//                    ->navigationSort(1)
 
             ]);
 
